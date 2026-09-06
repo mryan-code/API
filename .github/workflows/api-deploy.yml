@@ -78,37 +78,6 @@ jobs:
             exit 1
           fi
 
-          # Safety net: stop any PM2-managed instance first so npm stop and PID cleanup do not fight PM2 auto-restart.
-          if [ -f "scripts/stop-pm2.js" ]; then
-            # High-risk operation: this modifies remote process manager state for the backend service.
-            npm run stop:pm2 || true
-          fi
-
-          if [ -f "scripts/stop.js" ]; then
-            echo "Running npm stop script."
-            # High-risk operation: this invokes the project stop script on the remote HOST service.
-            stop_output=""
-            stop_exit_code="0"
-            if stop_output="$(npm run stop 2>&1)"; then
-              printf '%s\n' "$stop_output"
-              echo "npm stop script finished."
-              # If npm stop completed, treat the stop action as successful and avoid fallback stop logic.
-              exit 0
-            else
-              stop_exit_code="$?"
-              printf '%s\n' "$stop_output"
-              # Treat explicit no-listener output or PM2 stop confirmation as successful stop conditions.
-              if printf '%s\n' "$stop_output" | grep -Eq 'No local process is listening on port.*|PM2 app stopped:'; then
-                echo "npm stop confirmed server is already stopped. Stop worked."
-                exit 0
-              fi
-
-              echo "npm stop script did not complete (exit ${stop_exit_code}); falling back to port-based stop."
-            fi
-          else
-            echo "npm stop script is not available on this deploy path yet; falling back to port-based stop."
-          fi
-
           can_sudo="0"
           if command -v sudo >/dev/null 2>&1 && sudo -n true >/dev/null 2>&1; then
             can_sudo="1"
@@ -131,6 +100,44 @@ jobs:
               return 1
             fi
           }
+
+          # Safety net: stop any PM2-managed instance first so npm stop and PID cleanup do not fight PM2 auto-restart.
+          if [ -f "scripts/stop-pm2.js" ]; then
+            # High-risk operation: this modifies remote process manager state for the backend service.
+            npm run stop:pm2 || true
+          fi
+
+          if [ -f "scripts/stop.js" ]; then
+            echo "Running npm stop script."
+            # High-risk operation: this invokes the project stop script on the remote HOST service.
+            stop_output=""
+            stop_exit_code="0"
+            if stop_output="$(npm run stop 2>&1)"; then
+              printf '%s\n' "$stop_output"
+              echo "npm stop script finished."
+              # Only skip fallback when the TCP port is actually closed; npm stop exit 0 alone is not enough.
+              if ! has_listening_port; then
+                echo "npm stop cleared port ${SERVER_PORT}."
+                exit 0
+              fi
+              echo "npm stop returned success but port ${SERVER_PORT} is still open; falling back to port-based stop."
+            else
+              stop_exit_code="$?"
+              printf '%s\n' "$stop_output"
+              # Treat explicit no-listener output as success only when the port check agrees.
+              if printf '%s\n' "$stop_output" | grep -Eq 'No local process is listening on port.*|PM2 app stopped:'; then
+                if ! has_listening_port; then
+                  echo "npm stop confirmed server is already stopped. Stop worked."
+                  exit 0
+                fi
+                echo "npm stop claimed no listener but port ${SERVER_PORT} is still open; falling back to port-based stop."
+              else
+                echo "npm stop script did not complete (exit ${stop_exit_code}); falling back to port-based stop."
+              fi
+            fi
+          else
+            echo "npm stop script is not available on this deploy path yet; falling back to port-based stop."
+          fi
 
           get_port_pids() {
             local port_pids=""
@@ -293,7 +300,14 @@ jobs:
 
             if [ "$attempt" -ge 15 ] && [ "$((attempt % 3))" -eq 0 ]; then
               echo "Port ${SERVER_PORT} is still open; sending SIGKILL to matching process(es) (attempt ${attempt})."
+              # Re-stop PM2 during escalation so auto-restart cannot rebind the port after SIGKILL.
+              if [ -f "scripts/stop-pm2.js" ]; then
+                npm run stop:pm2 || true
+              fi
               stop_by_port_signal KILL || true
+              if command -v fuser >/dev/null 2>&1; then
+                run_privileged fuser -k -9 "${SERVER_PORT}/tcp" 2>/dev/null || true
+              fi
             fi
 
             sleep 1
@@ -523,13 +537,25 @@ jobs:
 
           echo "Waiting for server readiness."
           rm -f deploy-start.log
+
+          has_listening_port() {
+            if command -v ss >/dev/null 2>&1; then
+              ss -ltn | awk '{ print $4 }' | grep -Eq "[:.]${SERVER_PORT}$"
+            elif command -v netstat >/dev/null 2>&1; then
+              netstat -ltn | awk '{ print $4 }' | grep -Eq "[:.]${SERVER_PORT}$"
+            elif command -v nc >/dev/null 2>&1; then
+              nc -z 127.0.0.1 "${SERVER_PORT}" >/dev/null 2>&1
+            else
+              bash -c ":</dev/tcp/127.0.0.1/${SERVER_PORT}" >/dev/null 2>&1
+            fi
+          }
+
           # Safety net: stop any PM2-managed instance first so start mode is deterministic per deploy.
           if [ -f "scripts/stop-pm2.js" ]; then
             # High-risk operation: this modifies remote process manager state for the backend service.
             npm run stop:pm2 || true
           fi
-          # Safety net: ask the project stop script to clear any lingering dev server before starting a fresh one.
-          # This guards against the stop step missing a process that holds the port.
+          # Safety net: ask the project stop script to clear any lingering server before starting a fresh one.
           # High-risk operation: this invokes the project stop script on the remote HOST service.
           npm run stop || true
           _leftover_pids="$(ps -eo pid,args | awk -v deploy_path="$deploy_path" '
@@ -543,6 +569,20 @@ jobs:
             # shellcheck disable=SC2086
             kill -KILL $_leftover_pids 2>/dev/null || true
             sleep 2
+          fi
+          # Refuse to start while the listen port is still held; EADDRINUSE would fail later with a weaker signal.
+          if has_listening_port; then
+            echo "Port ${SERVER_PORT} still open before start; attempting final force-kill." >&2
+            if command -v fuser >/dev/null 2>&1; then
+              fuser -k -9 "${SERVER_PORT}/tcp" 2>/dev/null || true
+            fi
+            npm run stop || true
+            sleep 2
+          fi
+          if has_listening_port; then
+            echo "Cannot start: port ${SERVER_PORT} is still in use after stop attempts." >&2
+            ss -ltnp 2>/dev/null | grep -E "[:.]${SERVER_PORT}[[:space:]]" || netstat -tlnp 2>/dev/null | grep -E "[:.]${SERVER_PORT}[[:space:]]" || true
+            exit 1
           fi
           startup_mode="nohup"
           server_pid=""
@@ -561,18 +601,6 @@ jobs:
             server_pid="$!"
             echo "Server process started with PID ${server_pid}."
           fi
-
-          has_listening_port() {
-            if command -v ss >/dev/null 2>&1; then
-              ss -ltn | awk '{ print $4 }' | grep -Eq "[:.]${SERVER_PORT}$"
-            elif command -v netstat >/dev/null 2>&1; then
-              netstat -ltn | awk '{ print $4 }' | grep -Eq "[:.]${SERVER_PORT}$"
-            elif command -v nc >/dev/null 2>&1; then
-              nc -z 127.0.0.1 "${SERVER_PORT}" >/dev/null 2>&1
-            else
-              bash -c ":</dev/tcp/127.0.0.1/${SERVER_PORT}" >/dev/null 2>&1
-            fi
-          }
 
           has_started_log() {
             [ -f "deploy-start.log" ] && grep -Eq "App running at|Web server running\." deploy-start.log

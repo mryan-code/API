@@ -77,11 +77,12 @@ function isPidInAppRoot(pid) {
 		const pidCwd = fs.realpathSync(`/proc/${pid}/cwd`);
 		return pidCwd === appRoot || pidCwd.startsWith(`${appRoot}${path.sep}`);
 	} catch (error) {
-		return false;
+		// Can't verify cwd (permissions or non-Linux); keep the PID as a stop candidate.
+		return true;
 	}
 }
 
-function getPidsFromCommandLine(httpPort) {
+function getPidsFromCommandLine() {
 	const output = runCommand("ps", ["-eo", "pid,args"]);
 	const lines = output.split(/\r?\n/);
 
@@ -123,6 +124,29 @@ function parseNetstatPids(output, httpPort) {
 		.map(line => line.trim().split(/\s+/).pop()?.split("/")[0] || "");
 }
 
+// True when ss/netstat show a LISTEN socket on the target port (PID discovery optional).
+function isPortListeningFromOutput(output, httpPort) {
+	const portPattern = new RegExp(`[:.]${httpPort}(?:\\s|$)`);
+
+	return output
+		.split(/\r?\n/)
+		.some(line => /LISTEN/i.test(line) && portPattern.test(line));
+}
+
+function isPortListening(httpPort) {
+	const ssOutput = runCommand("ss", ["-ltn"]);
+	if (ssOutput && isPortListeningFromOutput(ssOutput, httpPort)) {
+		return true;
+	}
+
+	const netstatOutput = runCommand("netstat", ["-ltn"]);
+	if (netstatOutput && isPortListeningFromOutput(netstatOutput, httpPort)) {
+		return true;
+	}
+
+	return false;
+}
+
 function getListeningPids(httpPort) {
 	const pids = [
 		...parsePidList(
@@ -137,32 +161,112 @@ function getListeningPids(httpPort) {
 				"\n",
 			),
 		),
-		...getPidsFromCommandLine(httpPort),
+		...getPidsFromCommandLine(),
 	];
 
 	return [...new Set(pids)];
+}
+
+function getChildPids(parentPids) {
+	const parentSet = new Set(parentPids.map(String));
+	const output = runCommand("ps", ["-eo", "pid=,ppid="]);
+
+	return output
+		.split(/\r?\n/)
+		.map(line => line.trim().split(/\s+/))
+		.filter(
+			parts =>
+				parts.length >= 2 &&
+				/^\d+$/.test(parts[0]) &&
+				parentSet.has(parts[1]),
+		)
+		.map(parts => parts[0]);
+}
+
+// Expand parents to the full process tree so npm wrappers and node children both stop.
+function expandProcessTree(seedPids) {
+	const allPids = new Set(seedPids.map(String));
+	let frontier = [...allPids];
+
+	while (frontier.length > 0) {
+		const children = getChildPids(frontier).filter(pid => !allPids.has(pid));
+		if (children.length === 0) {
+			break;
+		}
+
+		for (const child of children) {
+			allPids.add(child);
+		}
+		frontier = children;
+	}
+
+	return [...allPids];
 }
 
 function wait(milliseconds) {
 	return new Promise(resolve => setTimeout(resolve, milliseconds));
 }
 
-function stopPids(pids) {
-	// High-risk operation: stop only the process(es) matched to the resolved HTTP_PORT/backend command.
-	for (const pid of pids) {
-		process.kill(Number(pid), stopSignal);
+function signalPid(pid, signal) {
+	try {
+		// High-risk operation: signal a matched local process for deploy stop.
+		process.kill(Number(pid), signal);
+		return true;
+	} catch (error) {
+		if (error && error.code !== "ESRCH") {
+			console.error(
+				`Failed to signal PID ${pid} with ${signal}: ${error.message}`,
+			);
+		}
+		return false;
 	}
+}
+
+function stopPids(pids, signal) {
+	const treePids = expandProcessTree(pids);
+
+	for (const pid of treePids) {
+		signalPid(pid, signal);
+	}
+
+	return treePids;
+}
+
+function forceKillByPort(httpPort) {
+	// Last-resort port reclaim when PID signaling left the LISTEN socket open.
+	if (runCommand("fuser", ["-k", "-9", `${httpPort}/tcp`])) {
+		return;
+	}
+
+	runCommand("fuser", ["-k", `${httpPort}/tcp`]);
 }
 
 async function main() {
 	const httpPort = resolveHttpPort();
 	const pids = getListeningPids(httpPort);
+	const portOpen = isPortListening(httpPort);
 
-	if (pids.length === 0) {
+	if (pids.length === 0 && !portOpen) {
 		// No listener means the stop target is already down, so this is a successful stop state.
 		console.log(
 			`No local process is listening on port ${httpPort}. Stop worked.`,
 		);
+		return;
+	}
+
+	if (pids.length === 0 && portOpen) {
+		// Port is open but PID discovery failed; do not report success or deploy will race the listener.
+		console.error(
+			`Port ${httpPort} is open but no stoppable PID was found.`,
+		);
+		forceKillByPort(httpPort);
+		await wait(1000);
+		if (isPortListening(httpPort)) {
+			process.exitCode = 1;
+			return;
+		}
+
+		console.log(`Stopped listener on port ${httpPort} via port force-kill.`);
 		return;
 	}
 
@@ -173,27 +277,30 @@ async function main() {
 		return;
 	}
 
-	stopPids(pids);
+	const signaledPids = stopPids(pids, stopSignal);
 
 	for (let attempt = 1; attempt <= 30; attempt++) {
 		await wait(1000);
 
 		const remainingPids = getListeningPids(httpPort);
+		const stillListening = isPortListening(httpPort);
 
-		if (remainingPids.length === 0) {
+		// Success only when the port is actually closed, not merely when PID discovery goes empty.
+		if (!stillListening && remainingPids.length === 0) {
 			console.log(
-				`Stopped local process(es) on port ${httpPort}: ${pids.join(", ")}`,
+				`Stopped local process(es) on port ${httpPort}: ${signaledPids.join(", ")}`,
 			);
 			return;
 		}
 
 		if (attempt >= 15 && attempt % 3 === 0) {
+			const killTargets =
+				remainingPids.length > 0 ? remainingPids : signaledPids;
 			console.log(
-				`Port ${httpPort} is still open after ${stopSignal}; sending SIGKILL to remaining process(es): ${remainingPids.join(", ")}`,
+				`Port ${httpPort} is still open after ${stopSignal}; sending SIGKILL to remaining process(es): ${killTargets.join(", ")}`,
 			);
-			for (const pid of remainingPids) {
-				process.kill(Number(pid), "SIGKILL");
-			}
+			stopPids(killTargets, "SIGKILL");
+			forceKillByPort(httpPort);
 		}
 	}
 
@@ -201,7 +308,15 @@ async function main() {
 	process.exitCode = 1;
 }
 
-main().catch(error => {
-	console.error(error.message);
-	process.exitCode = 1;
-});
+if (require.main === module) {
+	main().catch(error => {
+		console.error(error.message);
+		process.exitCode = 1;
+	});
+}
+
+module.exports = {
+	isPortListeningFromOutput,
+	parseSsPids,
+	parseNetstatPids,
+};
