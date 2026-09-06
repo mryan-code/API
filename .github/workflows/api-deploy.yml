@@ -382,9 +382,11 @@ jobs:
             --exclude='temp' \
             --exclude='.env' \
             --exclude='.env.*' \
+            --exclude='certificates/' \
             --filter='P .env' \
             --filter='P .env.*' \
             --filter='P node_modules/' \
+            --filter='P certificates/' \
             --rsync-path="$remote_rsync_path" \
             -e "ssh $SSH_KEEPALIVE_OPTIONS -p $DEPLOY_PORT -o ControlMaster=auto -o ControlPath=$control_path -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o BatchMode=yes -o PasswordAuthentication=no" \
             ./ \
