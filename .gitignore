@@ -1,0 +1,26 @@
+node_modules
+dist
+.DS_Store
+.env*
+.vscode/*.code-workspace
+.cursor/rules/user-rules.md
+
+# VS Code Extension development
+.vscode-extensions/**/node_modules
+.vscode-extensions/**/dist
+.vscode-extensions/**/*.mapc
+
+# Temporary files
+src/functions/**/*.3gpp
+src/functions/**/*.mp4
+
+uploads/*
+attachments/*
+recordings/*
+cleanup/*
+.dev-test-background-pids.json
+
+tts
+tts/model.onnx
+temp
+certificates/*

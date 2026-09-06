@@ -1,0 +1,20 @@
+{
+	// Bug fix: JSON schema disallows conditional keys; use Cursor's "mcpServers".
+	"mcpServers": {
+		// High-risk operation: runs remote package code via npx; requires human review.
+		"chrome-devtools": {
+			"command": "npx",
+			"args": ["-y", "chrome-devtools-mcp@latest", "--browser-url", "https://dev-domain.synology.me:9876", "--usageStatistics", "false", "--auto-connect", "true"]
+		},
+
+		// High-risk operation: runs remote package code via npx; requires human review.
+		"notion": {
+			"command": "npx",
+			"args": ["-y", "@notionhq/notion-mcp-server@latest"],
+			"env": {
+				// Security fix: use local environment variable, never hard-code tokens.
+				"NOTION_API_TOKEN": "${env:NOTION_API_TOKEN}"
+			}
+		}
+	}
+}

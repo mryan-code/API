@@ -1,0 +1,6 @@
+.git/
+.gitHub/
+node_modules/
+dist/
+src/bootstrap.ts
+*.md

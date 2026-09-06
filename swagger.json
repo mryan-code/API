@@ -1,0 +1,2917 @@
+{
+	"openapi": "3.0.0",
+	"info": {
+		"title": "Backend API",
+		"version": "1.0.0",
+		"description": ""
+	},
+	"servers": [],
+	"paths": {
+		"/start-app": {
+			"post": {
+				"summary": "Start app",
+				"description": "Return startup configuration for the client application.",
+				"tags": ["App"],
+				"responses": {
+					"200": {
+						"$ref": "#/components/responses/Ok"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"500": {
+						"$ref": "#/components/responses/InternalServerError"
+					}
+				},
+				"parameters": []
+			}
+		},
+		"/login-auth": {
+			"post": {
+				"summary": "Login",
+				"description": "Login",
+				"tags": ["Authentication"],
+				"responses": {
+					"200": {
+						"$ref": "#/components/responses/Ok"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					},
+					"500": {
+						"$ref": "#/components/responses/InternalServerError"
+					}
+				},
+				"parameters": [
+					{
+						"$ref": "#/components/parameters/required_email"
+					}
+				]
+			}
+		},
+		"/logout-auth": {
+			"post": {
+				"summary": "Logout",
+				"description": "Logout user",
+				"tags": ["Authentication"],
+				"responses": {
+					"200": {
+						"$ref": "#/components/responses/Ok"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					},
+					"500": {
+						"$ref": "#/components/responses/InternalServerError"
+					}
+				},
+				"parameters": [
+					{
+						"$ref": "#/components/parameters/required_user_id"
+					},
+					{
+						"name": "user_date",
+						"required": false,
+						"type": "string",
+						"description": "User date",
+						"in": "query"
+					}
+				]
+			}
+		},
+		"/verify-auth": {
+			"post": {
+				"summary": "Verify email code",
+				"description": "Verify email code",
+				"tags": ["Authentication"],
+				"responses": {
+					"200": {
+						"$ref": "#/components/responses/Ok"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					},
+					"500": {
+						"$ref": "#/components/responses/InternalServerError"
+					}
+				},
+				"parameters": [
+					{
+						"name": "email",
+						"required": true,
+						"description": "User's email.",
+						"in": "query",
+						"type": "string",
+						"format": "email",
+						"value": "matt.r@ecustomsolutions.com"
+					},
+					{
+						"name": "auth_code",
+						"required": true,
+						"description": "Code sent to user's email.",
+						"in": "query",
+						"type": "string"
+					}
+				]
+			}
+		},
+		"/test-auth": {
+			"post": {
+				"summary": "Check for authentication",
+				"description": "Check for authentication",
+				"tags": ["Authentication"],
+				"responses": {
+					"200": {
+						"$ref": "#/components/responses/Ok"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					},
+					"500": {
+						"$ref": "#/components/responses/InternalServerError"
+					}
+				},
+				"parameters": [
+					{
+						"name": "id",
+						"required": true,
+						"description": "User's Public ID.",
+						"in": "query",
+						"type": "string",
+						"value": "97b27b83-5d97-11f0-88a9-0281bd107331"
+					},
+					{
+						"name": "login_token",
+						"required": true,
+						"description": "User's authentication token.",
+						"in": "query",
+						"type": "string",
+						"value": "34j2689-6780-11f0-88a9-0281bd107311"
+					}
+				]
+			}
+		},
+		"/health": {
+			"get": {
+				"summary": "LLM health check",
+				"description": "Check LLM service availability.",
+				"tags": ["LLM"],
+				"responses": {
+					"200": {
+						"$ref": "#/components/responses/Ok"
+					},
+					"500": {
+						"$ref": "#/components/responses/InternalServerError"
+					}
+				}
+			}
+		},
+		"/system-model": {
+			"post": {
+				"summary": "Use Pre-trained LLM",
+				"description": "Use pre-trained LLM for inference.",
+				"tags": ["LLM"],
+				"responses": {
+					"200": {
+						"$ref": "#/components/responses/Ok"
+					},
+					"500": {
+						"$ref": "#/components/responses/InternalServerError"
+					}
+				},
+				"parameters": [
+					{
+						"name": "prompt",
+						"required": true,
+						"description": "Prompt to use for inference.",
+						"in": "query",
+						"type": "string",
+						"value": "Hello, how are you?"
+					},
+					{
+						"name": "option",
+						"required": true,
+						"description": "Option to use for inference (text, image, music, code, video).",
+						"in": "query",
+						"type": "string",
+						"value": "text"
+					}
+				]
+			}
+		},
+		"/custom-model": {
+			"post": {
+				"summary": "Use Pre-trained LLM",
+				"description": "Use pre-trained LLM for inference.",
+				"tags": ["LLM"],
+				"responses": {
+					"200": {
+						"$ref": "#/components/responses/Ok"
+					},
+					"500": {
+						"$ref": "#/components/responses/InternalServerError"
+					}
+				},
+				"parameters": [
+					{
+						"name": "prompt",
+						"required": true,
+						"description": "Prompt to use for inference.",
+						"in": "query",
+						"type": "string",
+						"value": "Hello, how are you?"
+					},
+					{
+						"name": "model",
+						"required": true,
+						"description": "Model to use for inference.",
+						"in": "query",
+						"type": "string",
+						"value": "Gemma4-31B-QAT-Uncensored-HauhauCS-Balanced-Q4_K_M.gguf"
+					},
+					{
+						"name": "label",
+						"required": true,
+						"description": "Required custom model label (max 20 chars).",
+						"in": "query",
+						"type": "string",
+						"value": "default"
+					}
+				]
+			}
+		},
+		"/chat": {
+			"post": {
+				"summary": "Chat with LLM",
+				"description": "Send a chat request to the LLM service.",
+				"tags": ["LLM"],
+				"responses": {
+					"200": {
+						"$ref": "#/components/responses/Ok"
+					},
+					"500": {
+						"$ref": "#/components/responses/InternalServerError"
+					}
+				},
+				"parameters": [
+					{
+						"name": "prompt",
+						"required": true,
+						"description": "Prompt to send to the LLM.",
+						"in": "query",
+						"type": "string",
+						"value": "Hello, how are you?"
+					},
+					{
+						"name": "instruction_type",
+						"required": true,
+						"description": "Type of prompt to send to the LLM service.",
+						"in": "query",
+						"type": "string",
+						"value": "text"
+					},
+					{
+						"name": "proactive_allowed",
+						"required": false,
+						"description": "Allows the reasoning layer to respond to otherwise low-signal input.",
+						"in": "query",
+						"type": "string",
+						"value": "false"
+					}
+				]
+			}
+		},
+		"/add-global-rule": {
+			"post": {
+				"summary": "Add global LLM rule",
+				"description": "Create a global rule used by LLM workflows.",
+				"tags": ["LLM"],
+				"responses": {
+					"200": {
+						"$ref": "#/components/responses/Ok"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					},
+					"500": {
+						"$ref": "#/components/responses/InternalServerError"
+					}
+				},
+				"parameters": [
+					{
+						"name": "rule",
+						"required": true,
+						"description": "Global rule text.",
+						"in": "query",
+						"type": "string"
+					},
+					{
+						"name": "summary",
+						"required": false,
+						"description": "Optional concise summary of the global rule.",
+						"in": "query",
+						"type": "string"
+					},
+					{
+						"name": "strict",
+						"required": false,
+						"description": "Strict mode flag where 1 enforces strict handling.",
+						"in": "query",
+						"type": "string",
+						"value": "1"
+					}
+				]
+			}
+		},
+		"/save-global-rule": {
+			"put": {
+				"summary": "Save global LLM rule",
+				"description": "Update an existing global LLM rule.",
+				"tags": ["LLM"],
+				"responses": {
+					"200": {
+						"$ref": "#/components/responses/Ok"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					},
+					"500": {
+						"$ref": "#/components/responses/InternalServerError"
+					}
+				},
+				"parameters": [
+					{
+						"$ref": "#/components/parameters/required_id"
+					},
+					{
+						"name": "rule",
+						"required": false,
+						"description": "Global rule text.",
+						"in": "query",
+						"type": "string"
+					},
+					{
+						"name": "summary",
+						"required": false,
+						"description": "Optional concise summary of the global rule.",
+						"in": "query",
+						"type": "string"
+					},
+					{
+						"name": "strict",
+						"required": false,
+						"description": "Strict mode flag where 1 enforces strict handling.",
+						"in": "query",
+						"type": "string",
+						"value": "1"
+					}
+				]
+			}
+		},
+		"/get-global-rule": {
+			"get": {
+				"summary": "Get global LLM rules",
+				"description": "Get global rules used by LLM workflows.",
+				"tags": ["LLM"],
+				"responses": {
+					"200": {
+						"$ref": "#/components/responses/Ok"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					},
+					"500": {
+						"$ref": "#/components/responses/InternalServerError"
+					}
+				},
+				"parameters": [
+					{
+						"$ref": "#/components/parameters/show_deleted"
+					},
+					{
+						"$ref": "#/components/parameters/id"
+					},
+					{
+						"$ref": "#/components/parameters/order"
+					}
+				]
+			}
+		},
+		"/delete-global-rule": {
+			"delete": {
+				"summary": "Delete global LLM rule",
+				"description": "Soft-delete or restore a global LLM rule.",
+				"tags": ["LLM"],
+				"responses": {
+					"200": {
+						"$ref": "#/components/responses/Ok"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					},
+					"500": {
+						"$ref": "#/components/responses/InternalServerError"
+					}
+				},
+				"parameters": [
+					{
+						"$ref": "#/components/parameters/required_id"
+					}
+				]
+			}
+		},
+		"/add-model-type": {
+			"post": {
+				"summary": "Add model type",
+				"description": "Create a model type used by LLM model selection.",
+				"tags": ["LLM"],
+				"responses": {
+					"200": {
+						"$ref": "#/components/responses/Ok"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					},
+					"500": {
+						"$ref": "#/components/responses/InternalServerError"
+					}
+				},
+				"parameters": [
+					{
+						"name": "type",
+						"required": true,
+						"description": "Model type value (max 10 chars).",
+						"in": "query",
+						"type": "string",
+						"value": "system"
+					}
+				]
+			}
+		},
+		"/save-model-type": {
+			"post": {
+				"summary": "Save model type",
+				"description": "Update an existing model type.",
+				"tags": ["LLM"],
+				"responses": {
+					"200": {
+						"$ref": "#/components/responses/Ok"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					},
+					"500": {
+						"$ref": "#/components/responses/InternalServerError"
+					}
+				},
+				"parameters": [
+					{
+						"$ref": "#/components/parameters/required_id"
+					},
+					{
+						"name": "type",
+						"required": false,
+						"description": "Model type value (max 10 chars).",
+						"in": "query",
+						"type": "string",
+						"value": "system"
+					}
+				]
+			}
+		},
+		"/get-model-type": {
+			"get": {
+				"summary": "Get model types",
+				"description": "Get available model types used by LLM model selection.",
+				"tags": ["LLM"],
+				"responses": {
+					"200": {
+						"$ref": "#/components/responses/Ok"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					},
+					"500": {
+						"$ref": "#/components/responses/InternalServerError"
+					}
+				},
+				"parameters": [
+					{
+						"$ref": "#/components/parameters/show_deleted"
+					},
+					{
+						"$ref": "#/components/parameters/id"
+					},
+					{
+						"$ref": "#/components/parameters/order"
+					}
+				]
+			}
+		},
+		"/delete-model-type": {
+			"delete": {
+				"summary": "Delete model type",
+				"description": "Soft-delete or restore a model type.",
+				"tags": ["LLM"],
+				"responses": {
+					"200": {
+						"$ref": "#/components/responses/Ok"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					},
+					"500": {
+						"$ref": "#/components/responses/InternalServerError"
+					}
+				},
+				"parameters": [
+					{
+						"$ref": "#/components/parameters/required_id"
+					}
+				]
+			}
+		},
+		"/add-user-p2": {
+			"put": {
+				"summary": "Add user memory",
+				"description": "Create a user memory record.",
+				"tags": ["LLM"],
+				"responses": {
+					"200": {
+						"$ref": "#/components/responses/Ok"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					},
+					"500": {
+						"$ref": "#/components/responses/InternalServerError"
+					}
+				},
+				"parameters": [
+					{
+						"name": "memory",
+						"required": true,
+						"description": "User memory text.",
+						"in": "query",
+						"type": "string"
+					},
+					{
+						"$ref": "#/components/parameters/required_user_id"
+					}
+				]
+			}
+		},
+		"/save-user-p2": {
+			"post": {
+				"summary": "Save user memory",
+				"description": "Update an existing user memory record.",
+				"tags": ["LLM"],
+				"responses": {
+					"200": {
+						"$ref": "#/components/responses/Ok"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					},
+					"500": {
+						"$ref": "#/components/responses/InternalServerError"
+					}
+				},
+				"parameters": [
+					{
+						"$ref": "#/components/parameters/required_id"
+					},
+					{
+						"name": "p2",
+						"required": false,
+						"description": "User memory text.",
+						"in": "query",
+						"type": "string"
+					}
+				]
+			}
+		},
+		"/get-user-p2": {
+			"get": {
+				"summary": "Get user memories",
+				"description": "Get user memory records.",
+				"tags": ["LLM"],
+				"responses": {
+					"200": {
+						"$ref": "#/components/responses/Ok"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					},
+					"500": {
+						"$ref": "#/components/responses/InternalServerError"
+					}
+				},
+				"parameters": [
+					{
+						"$ref": "#/components/parameters/show_deleted"
+					},
+					{
+						"$ref": "#/components/parameters/id"
+					},
+					{
+						"$ref": "#/components/parameters/keyword"
+					},
+					{
+						"$ref": "#/components/parameters/order"
+					}
+				]
+			}
+		},
+		"/delete-user-p2": {
+			"delete": {
+				"summary": "Delete user memory",
+				"description": "Soft-delete or restore a user memory record.",
+				"tags": ["LLM"],
+				"responses": {
+					"200": {
+						"$ref": "#/components/responses/Ok"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					},
+					"500": {
+						"$ref": "#/components/responses/InternalServerError"
+					}
+				},
+				"parameters": [
+					{
+						"$ref": "#/components/parameters/required_id"
+					}
+				]
+			}
+		},
+		"/add-user-conversation": {
+			"put": {
+				"summary": "Add user conversation subject",
+				"description": "Create a conversation subject for a user.",
+				"tags": ["LLM"],
+				"responses": {
+					"200": {
+						"$ref": "#/components/responses/Ok"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					},
+					"500": {
+						"$ref": "#/components/responses/InternalServerError"
+					}
+				},
+				"parameters": [
+					{
+						"name": "subject",
+						"required": true,
+						"description": "Conversation subject.",
+						"in": "query",
+						"type": "string"
+					},
+					{
+						"$ref": "#/components/parameters/required_user_id"
+					}
+				]
+			}
+		},
+		"/save-user-conversation": {
+			"post": {
+				"summary": "Save user conversation subject",
+				"description": "Update an existing user conversation subject.",
+				"tags": ["LLM"],
+				"responses": {
+					"200": {
+						"$ref": "#/components/responses/Ok"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					},
+					"500": {
+						"$ref": "#/components/responses/InternalServerError"
+					}
+				},
+				"parameters": [
+					{
+						"$ref": "#/components/parameters/required_id"
+					},
+					{
+						"name": "subject",
+						"required": false,
+						"description": "Conversation subject.",
+						"in": "query",
+						"type": "string"
+					}
+				]
+			}
+		},
+		"/get-user-conversation": {
+			"get": {
+				"summary": "Get user conversation subjects",
+				"description": "Get conversation subject records for users.",
+				"tags": ["LLM"],
+				"responses": {
+					"200": {
+						"$ref": "#/components/responses/Ok"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					},
+					"500": {
+						"$ref": "#/components/responses/InternalServerError"
+					}
+				},
+				"parameters": [
+					{
+						"$ref": "#/components/parameters/show_deleted"
+					},
+					{
+						"$ref": "#/components/parameters/id"
+					},
+					{
+						"$ref": "#/components/parameters/keyword"
+					},
+					{
+						"$ref": "#/components/parameters/order"
+					}
+				]
+			}
+		},
+		"/delete-user-conversation": {
+			"delete": {
+				"summary": "Delete user conversation subject",
+				"description": "Soft-delete or restore a user conversation subject.",
+				"tags": ["LLM"],
+				"responses": {
+					"200": {
+						"$ref": "#/components/responses/Ok"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					},
+					"500": {
+						"$ref": "#/components/responses/InternalServerError"
+					}
+				},
+				"parameters": [
+					{
+						"$ref": "#/components/parameters/required_id"
+					}
+				]
+			}
+		},
+		"/add-conversation": {
+			"put": {
+				"summary": "Add conversation message",
+				"description": "Create a conversation entry linked to a user subject thread.",
+				"tags": ["LLM"],
+				"responses": {
+					"200": {
+						"$ref": "#/components/responses/Ok"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					},
+					"500": {
+						"$ref": "#/components/responses/InternalServerError"
+					}
+				},
+				"parameters": [
+					{
+						"name": "conversation",
+						"required": true,
+						"description": "Conversation text.",
+						"in": "query",
+						"type": "string"
+					},
+					{
+						"$ref": "#/components/parameters/required_user_id"
+					},
+					{
+						"name": "user_conversation_subject_id",
+						"required": true,
+						"description": "Parent user conversation subject id.",
+						"in": "query",
+						"type": "number"
+					}
+				]
+			}
+		},
+		"/save-conversation": {
+			"post": {
+				"summary": "Save conversation message",
+				"description": "Update an existing conversation entry.",
+				"tags": ["LLM"],
+				"responses": {
+					"200": {
+						"$ref": "#/components/responses/Ok"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					},
+					"500": {
+						"$ref": "#/components/responses/InternalServerError"
+					}
+				},
+				"parameters": [
+					{
+						"$ref": "#/components/parameters/required_id"
+					},
+					{
+						"name": "conversation",
+						"required": false,
+						"description": "Conversation text.",
+						"in": "query",
+						"type": "string"
+					},
+					{
+						"name": "user_conversation_subject_id",
+						"required": false,
+						"description": "Parent user conversation subject id.",
+						"in": "query",
+						"type": "number"
+					}
+				]
+			}
+		},
+		"/get-conversation": {
+			"get": {
+				"summary": "Get conversation messages",
+				"description": "Get conversation entries.",
+				"tags": ["LLM"],
+				"responses": {
+					"200": {
+						"$ref": "#/components/responses/Ok"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					},
+					"500": {
+						"$ref": "#/components/responses/InternalServerError"
+					}
+				},
+				"parameters": [
+					{
+						"$ref": "#/components/parameters/show_deleted"
+					},
+					{
+						"$ref": "#/components/parameters/id"
+					},
+					{
+						"$ref": "#/components/parameters/keyword"
+					},
+					{
+						"$ref": "#/components/parameters/order"
+					}
+				]
+			}
+		},
+		"/delete-conversation": {
+			"delete": {
+				"summary": "Delete conversation message",
+				"description": "Soft-delete or restore a conversation entry.",
+				"tags": ["LLM"],
+				"responses": {
+					"200": {
+						"$ref": "#/components/responses/Ok"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					},
+					"500": {
+						"$ref": "#/components/responses/InternalServerError"
+					}
+				},
+				"parameters": [
+					{
+						"$ref": "#/components/parameters/required_id"
+					}
+				]
+			}
+		},
+		"/add-user-guideline": {
+			"put": {
+				"summary": "Add user guideline",
+				"description": "Create a user guideline record.",
+				"tags": ["LLM"],
+				"responses": {
+					"200": {
+						"$ref": "#/components/responses/Ok"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					},
+					"500": {
+						"$ref": "#/components/responses/InternalServerError"
+					}
+				},
+				"parameters": [
+					{
+						"name": "guideline",
+						"required": true,
+						"description": "Guideline text.",
+						"in": "query",
+						"type": "string"
+					},
+					{
+						"$ref": "#/components/parameters/required_user_id"
+					}
+				]
+			}
+		},
+		"/save-user-guideline": {
+			"post": {
+				"summary": "Save user guideline",
+				"description": "Update an existing user guideline record.",
+				"tags": ["LLM"],
+				"responses": {
+					"200": {
+						"$ref": "#/components/responses/Ok"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					},
+					"500": {
+						"$ref": "#/components/responses/InternalServerError"
+					}
+				},
+				"parameters": [
+					{
+						"$ref": "#/components/parameters/required_id"
+					},
+					{
+						"name": "guideline",
+						"required": false,
+						"description": "Guideline text.",
+						"in": "query",
+						"type": "string"
+					}
+				]
+			}
+		},
+		"/get-user-guideline": {
+			"get": {
+				"summary": "Get user guidelines",
+				"description": "Get user guideline records.",
+				"tags": ["LLM"],
+				"responses": {
+					"200": {
+						"$ref": "#/components/responses/Ok"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					},
+					"500": {
+						"$ref": "#/components/responses/InternalServerError"
+					}
+				},
+				"parameters": [
+					{
+						"$ref": "#/components/parameters/show_deleted"
+					},
+					{
+						"$ref": "#/components/parameters/id"
+					},
+					{
+						"$ref": "#/components/parameters/keyword"
+					},
+					{
+						"$ref": "#/components/parameters/order"
+					}
+				]
+			}
+		},
+		"/delete-user-guideline": {
+			"delete": {
+				"summary": "Delete user guideline",
+				"description": "Soft-delete or restore a user guideline record.",
+				"tags": ["LLM"],
+				"responses": {
+					"200": {
+						"$ref": "#/components/responses/Ok"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					},
+					"500": {
+						"$ref": "#/components/responses/InternalServerError"
+					}
+				},
+				"parameters": [
+					{
+						"$ref": "#/components/parameters/required_id"
+					}
+				]
+			}
+		},
+		"/add-user-avatar": {
+			"put": {
+				"summary": "Add user avatar",
+				"description": "Create a user avatar record.",
+				"tags": ["LLM"],
+				"responses": {
+					"200": {
+						"$ref": "#/components/responses/Ok"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					},
+					"500": {
+						"$ref": "#/components/responses/InternalServerError"
+					}
+				},
+				"parameters": [
+					{
+						"name": "avatar_name",
+						"required": false,
+						"description": "Display name for the avatar.",
+						"in": "query",
+						"type": "string"
+					},
+					{
+						"name": "persona_humourous_serious",
+						"required": false,
+						"description": "Persona slider value from humourous (0) to serious (100).",
+						"in": "query",
+						"type": "integer"
+					},
+					{
+						"name": "persona_emotional_sterile",
+						"required": false,
+						"description": "Persona slider value from emotional (0) to sterile (100).",
+						"in": "query",
+						"type": "integer"
+					},
+					{
+						"name": "persona_informal_business",
+						"required": false,
+						"description": "Persona slider value from informal (0) to business (100).",
+						"in": "query",
+						"type": "integer"
+					},
+					{
+						"name": "persona_playful_strict",
+						"required": false,
+						"description": "Persona slider value from playful (0) to strict (100).",
+						"in": "query",
+						"type": "integer"
+					},
+					{
+						"name": "persona_quirky_convensional",
+						"required": false,
+						"description": "Persona slider value from quirky (0) to conventional (100).",
+						"in": "query",
+						"type": "integer"
+					},
+					{
+						"name": "avatar_voice",
+						"required": false,
+						"description": "Voice option identifier for the avatar.",
+						"in": "query",
+						"type": "string"
+					},
+					{
+						"name": "avatar_details",
+						"required": false,
+						"description": "Free-form avatar details.",
+						"in": "query",
+						"type": "string"
+					},
+					{
+						"$ref": "#/components/parameters/required_user_id"
+					}
+				]
+			}
+		},
+		"/save-user-avatar": {
+			"post": {
+				"summary": "Save user avatar",
+				"description": "Update an existing user avatar record.",
+				"tags": ["LLM"],
+				"responses": {
+					"200": {
+						"$ref": "#/components/responses/Ok"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					},
+					"500": {
+						"$ref": "#/components/responses/InternalServerError"
+					}
+				},
+				"parameters": [
+					{
+						"$ref": "#/components/parameters/required_id"
+					},
+					{
+						"name": "avatar_name",
+						"required": false,
+						"description": "Display name for the avatar.",
+						"in": "query",
+						"type": "string"
+					},
+					{
+						"name": "persona_humourous_serious",
+						"required": false,
+						"description": "Persona slider value from humourous (0) to serious (100).",
+						"in": "query",
+						"type": "integer"
+					},
+					{
+						"name": "persona_emotional_sterile",
+						"required": false,
+						"description": "Persona slider value from emotional (0) to sterile (100).",
+						"in": "query",
+						"type": "integer"
+					},
+					{
+						"name": "persona_informal_business",
+						"required": false,
+						"description": "Persona slider value from informal (0) to business (100).",
+						"in": "query",
+						"type": "integer"
+					},
+					{
+						"name": "persona_playful_strict",
+						"required": false,
+						"description": "Persona slider value from playful (0) to strict (100).",
+						"in": "query",
+						"type": "integer"
+					},
+					{
+						"name": "persona_quirky_convensional",
+						"required": false,
+						"description": "Persona slider value from quirky (0) to conventional (100).",
+						"in": "query",
+						"type": "integer"
+					},
+					{
+						"name": "avatar_voice",
+						"required": false,
+						"description": "Voice option identifier for the avatar.",
+						"in": "query",
+						"type": "string"
+					},
+					{
+						"name": "avatar_details",
+						"required": false,
+						"description": "Free-form avatar details.",
+						"in": "query",
+						"type": "string"
+					}
+				]
+			}
+		},
+		"/get-user-avatar": {
+			"get": {
+				"summary": "Get user avatars",
+				"description": "Get user avatar records.",
+				"tags": ["LLM"],
+				"responses": {
+					"200": {
+						"$ref": "#/components/responses/Ok"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					},
+					"500": {
+						"$ref": "#/components/responses/InternalServerError"
+					}
+				},
+				"parameters": [
+					{
+						"$ref": "#/components/parameters/show_deleted"
+					},
+					{
+						"$ref": "#/components/parameters/id"
+					},
+					{
+						"$ref": "#/components/parameters/keyword"
+					},
+					{
+						"$ref": "#/components/parameters/order"
+					}
+				]
+			}
+		},
+		"/get-avatar-voice": {
+			"get": {
+				"summary": "Get avatar voice options",
+				"description": "Get avatar voice options ordered by label and grouped by gender.",
+				"tags": ["LLM"],
+				"responses": {
+					"200": {
+						"$ref": "#/components/responses/Ok"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					},
+					"500": {
+						"$ref": "#/components/responses/InternalServerError"
+					}
+				}
+			}
+		},
+		"/delete-user-avatar": {
+			"delete": {
+				"summary": "Delete user avatar",
+				"description": "Soft-delete or restore a user avatar record.",
+				"tags": ["LLM"],
+				"responses": {
+					"200": {
+						"$ref": "#/components/responses/Ok"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					},
+					"500": {
+						"$ref": "#/components/responses/InternalServerError"
+					}
+				},
+				"parameters": [
+					{
+						"$ref": "#/components/parameters/required_id"
+					}
+				]
+			}
+		},
+		"/get-page": {
+			"get": {
+				"summary": "Get generic",
+				"description": "Get generic",
+				"tags": ["Administration-Page"],
+				"responses": {
+					"200": {
+						"$ref": "#/components/responses/Ok"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					},
+					"500": {
+						"$ref": "#/components/responses/InternalServerError"
+					}
+				},
+				"parameters": [
+					{
+						"$ref": "#/components/parameters/show_deleted"
+					},
+					{
+						"$ref": "#/components/parameters/id"
+					},
+					{
+						"$ref": "#/components/parameters/keyword"
+					},
+					{
+						"$ref": "#/components/parameters/order"
+					}
+				]
+			}
+		},
+
+		"/add-page": {
+			"post": {
+				"summary": "Add Page",
+				"description": "Insert page",
+				"tags": ["Administration-Page"],
+				"responses": {
+					"200": {
+						"$ref": "#/components/responses/Ok"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					},
+					"500": {
+						"$ref": "#/components/responses/InternalServerError"
+					}
+				},
+				"parameters": [
+					{
+						"$ref": "#/components/parameters/required_name"
+					},
+					{
+						"name": "slug",
+						"required": true,
+						"type": "sting",
+						"value": "page-name",
+						"description": "The page's path.",
+						"in": "query"
+					},
+					{
+						"name": "file",
+						"required": true,
+						"type": "sting",
+						"value": "Template.vue",
+						"description": "The page's component file.",
+						"in": "query"
+					},
+					{
+						"name": "auth",
+						"required": true,
+						"type": "integer",
+						"value": "1",
+						"description": "Is this page public? (1 == auth, 2 == no auth, 3 == both)",
+						"in": "query"
+					},
+					{
+						"name": "permission",
+						"required": true,
+						"type": "integer",
+						"value": "3",
+						"description": "Who can access this page. (0 == none, 1 == admin, 2 == manager, 3 == user)",
+						"in": "query"
+					},
+					{
+						"name": "order",
+						"required": true,
+						"type": "integer",
+						"value": "1",
+						"description": "In what order.",
+						"in": "query"
+					},
+					{
+						"name": "path",
+						"required": true,
+						"type": "string",
+						"value": "/page-name",
+						"description": "In what order.",
+						"in": "query"
+					},
+					{
+						"name": "location",
+						"required": true,
+						"type": "integer",
+						"value": "1",
+						"description": "Which menu location. 0 == Hidden, 1 == Main, 2 == Header, 3 == Footer.",
+						"in": "query"
+					},
+					{
+						"name": "icon",
+						"required": false,
+						"type": "string",
+						"value": "",
+						"description": "An icon that appears on the menu.",
+						"in": "query"
+					},
+					{
+						"name": "description",
+						"required": false,
+						"type": "string",
+						"value": "",
+						"description": "A short description that appears on the menu.",
+						"in": "query"
+					}
+				]
+			}
+		},
+		"/save-page": {
+			"put": {
+				"summary": "Save Page",
+				"description": "Save page",
+				"tags": ["Administration-Page"],
+				"responses": {
+					"200": {
+						"$ref": "#/components/responses/Ok"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					},
+					"500": {
+						"$ref": "#/components/responses/InternalServerError"
+					}
+				},
+				"parameters": [
+					{
+						"$ref": "#/components/parameters/required_id"
+					},
+					{
+						"$ref": "#/components/parameters/required_name"
+					},
+					{
+						"name": "slug",
+						"required": true,
+						"type": "sting",
+						"value": "page-name",
+						"description": "The page's path.",
+						"in": "query"
+					},
+					{
+						"name": "file",
+						"required": true,
+						"type": "sting",
+						"value": "Template.vue",
+						"description": "The page's component file.",
+						"in": "query"
+					},
+					{
+						"name": "auth",
+						"required": true,
+						"type": "integer",
+						"value": "1",
+						"description": "Is this page public? (1 == auth, 2 == no auth, 3 == both)",
+						"in": "query"
+					},
+					{
+						"name": "permission",
+						"required": true,
+						"type": "integer",
+						"value": "3",
+						"description": "Who can access this page. (0 == none, 1 == admin, 2 == manager, 3 == user)",
+						"in": "query"
+					},
+					{
+						"name": "order",
+						"required": true,
+						"type": "integer",
+						"value": "1",
+						"description": "In what order.",
+						"in": "query"
+					},
+					{
+						"name": "path",
+						"required": true,
+						"type": "string",
+						"value": "/page-name",
+						"description": "In what order.",
+						"in": "query"
+					},
+					{
+						"name": "icon",
+						"required": false,
+						"type": "string",
+						"value": "",
+						"description": "An icon that appears on the menu.",
+						"in": "query"
+					},
+					{
+						"name": "description",
+						"required": false,
+						"type": "string",
+						"value": "",
+						"description": "A short description that appears on the menu.",
+						"in": "query"
+					},
+					{
+						"name": "on_menu",
+						"required": false,
+						"type": "integer",
+						"value": "1",
+						"description": "If is displayed on menu == 1, else == 0.",
+						"in": "query"
+					}
+				]
+			}
+		},
+
+		"/add-user": {
+			"post": {
+				"summary": "Add user",
+				"description": "Add user to department",
+				"tags": ["Administration-User"],
+				"responses": {
+					"200": {
+						"$ref": "#/components/responses/Ok"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					},
+					"500": {
+						"$ref": "#/components/responses/InternalServerError"
+					}
+				},
+				"parameters": [
+					{
+						"$ref": "#/components/parameters/required_email"
+					},
+					{
+						"$ref": "#/components/parameters/required_first_name"
+					},
+					{
+						"$ref": "#/components/parameters/required_last_name"
+					}
+				]
+			}
+		},
+		"/get-user": {
+			"get": {
+				"summary": "Get Users",
+				"description": "Get users",
+				"tags": ["Administration-User"],
+				"responses": {
+					"200": {
+						"$ref": "#/components/responses/Ok"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					},
+					"500": {
+						"$ref": "#/components/responses/InternalServerError"
+					}
+				},
+				"parameters": [
+					{
+						"$ref": "#/components/parameters/show_deleted"
+					},
+					{
+						"$ref": "#/components/parameters/id"
+					},
+					{
+						"$ref": "#/components/parameters/keyword"
+					},
+					{
+						"$ref": "#/components/parameters/order"
+					}
+				]
+			}
+		},
+		"/save-user": {
+			"put": {
+				"summary": "Save user",
+				"description": "Save user",
+				"tags": ["Administration-User"],
+				"responses": {
+					"200": {
+						"$ref": "#/components/responses/Ok"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					},
+					"500": {
+						"$ref": "#/components/responses/InternalServerError"
+					}
+				},
+				"parameters": [
+					{
+						"$ref": "#/components/parameters/required_id"
+					},
+					{
+						"$ref": "#/components/parameters/required_email"
+					},
+					{
+						"$ref": "#/components/parameters/required_first_name"
+					},
+					{
+						"$ref": "#/components/parameters/required_last_name"
+					},
+					{
+						"$ref": "#/components/parameters/avatar"
+					},
+					{
+						"$ref": "#/components/parameters/auto_dial"
+					}
+				]
+			}
+		},
+		"/cycle-user-role": {
+			"post": {
+				"summary": "Add user role",
+				"description": "Add user role",
+				"tags": ["Administration-User-Role"],
+				"responses": {
+					"200": {
+						"$ref": "#/components/responses/Ok"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					},
+					"500": {
+						"$ref": "#/components/responses/InternalServerError"
+					}
+				},
+				"parameters": [
+					{
+						"$ref": "#/components/parameters/required_user_id"
+					},
+					{
+						"$ref": "#/components/parameters/required_role_id"
+					}
+				]
+			}
+		},
+		"/get-user-role": {
+			"get": {
+				"summary": "Get User roles",
+				"description": "Get user roles",
+				"tags": ["Administration-User-Role"],
+				"responses": {
+					"200": {
+						"$ref": "#/components/responses/Ok"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					},
+					"500": {
+						"$ref": "#/components/responses/InternalServerError"
+					}
+				},
+				"parameters": [
+					{
+						"$ref": "#/components/parameters/required_user_id"
+					}
+				]
+			}
+		},
+		"/get-role": {
+			"get": {
+				"summary": "Get roles",
+				"description": "Get roles",
+				"tags": ["Administration-Role"],
+				"responses": {
+					"200": {
+						"$ref": "#/components/responses/Ok"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					},
+					"500": {
+						"$ref": "#/components/responses/InternalServerError"
+					}
+				},
+				"parameters": [
+					{
+						"$ref": "#/components/parameters/show_deleted"
+					},
+					{
+						"$ref": "#/components/parameters/id"
+					},
+					{
+						"$ref": "#/components/parameters/keyword"
+					},
+					{
+						"$ref": "#/components/parameters/order"
+					}
+				]
+			}
+		},
+
+		"/add-errorlog": {
+			"post": {
+				"summary": "Add error log",
+				"description": "Add an error log entry",
+				"tags": ["Administration-ErrorLog"],
+				"responses": {
+					"200": {
+						"$ref": "#/components/responses/Ok"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					},
+					"500": {
+						"$ref": "#/components/responses/InternalServerError"
+					}
+				},
+				"parameters": [
+					{
+						"name": "note",
+						"required": true,
+						"type": "string",
+						"description": "Error message",
+						"in": "query"
+					}
+				]
+			}
+		},
+		"/get-errorlog": {
+			"get": {
+				"summary": "Get error log",
+				"description": "Get error log entries (pagination preserves request parameters for activity logging)",
+				"tags": ["Administration-ErrorLog"],
+				"responses": {
+					"200": {
+						"$ref": "#/components/responses/Ok"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					},
+					"500": {
+						"$ref": "#/components/responses/InternalServerError"
+					}
+				},
+				"parameters": [
+					{
+						"$ref": "#/components/parameters/show_deleted"
+					},
+					{
+						"$ref": "#/components/parameters/id"
+					},
+					{
+						"name": "start",
+						"required": false,
+						"type": "string",
+						"description": "Start date",
+						"in": "query"
+					},
+					{
+						"name": "end",
+						"required": false,
+						"type": "string",
+						"description": "End date",
+						"in": "query"
+					},
+					{
+						"$ref": "#/components/parameters/order"
+					}
+				]
+			}
+		},
+		"/save-errorlog": {
+			"put": {
+				"summary": "Save error log",
+				"description": "Update an error log entry",
+				"tags": ["Administration-ErrorLog"],
+				"responses": {
+					"200": {
+						"$ref": "#/components/responses/Ok"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					},
+					"500": {
+						"$ref": "#/components/responses/InternalServerError"
+					}
+				},
+				"parameters": [
+					{
+						"$ref": "#/components/parameters/required_id"
+					},
+					{
+						"name": "note",
+						"required": false,
+						"type": "string",
+						"description": "Error message",
+						"in": "query"
+					}
+				]
+			}
+		},
+		"/get-log": {
+			"get": {
+				"summary": "Get Log",
+				"description": "Get Log.",
+				"tags": ["Administration-Log"],
+				"responses": {
+					"200": {
+						"$ref": "#/components/responses/Ok"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					},
+					"500": {
+						"$ref": "#/components/responses/InternalServerError"
+					}
+				},
+				"parameters": []
+			}
+		},
+		"/get-requestlog": {
+			"get": {
+				"summary": "Get Requestlog",
+				"description": "Get Requestlog.",
+				"tags": ["Administration-Requestlog"],
+				"responses": {
+					"200": {
+						"$ref": "#/components/responses/Ok"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					},
+					"500": {
+						"$ref": "#/components/responses/InternalServerError"
+					}
+				},
+				"parameters": []
+			}
+		}
+	},
+	"components": {
+		"securitySchemes": {
+			"bearerAuth": {
+				"type": "http",
+				"scheme": "bearer",
+				"bearerFormat": "JWT",
+				"required": true,
+				"value": ""
+			}
+		},
+		"responses": {
+			"Ok": {
+				"description": "Operation has been finished successfully"
+			},
+			"NotFound": {
+				"description": "Resource has not been found"
+			},
+			"InternalServerError": {
+				"description": "Internal server error"
+			},
+			"Unauthorized": {
+				"description": "Authorization Required"
+			}
+		},
+		"parameters": {
+			"request_user": {
+				"in": "header",
+				"type": "integer | string",
+				"description": "User ID making the request.",
+				"name": "request_user",
+				"required": true,
+				"style": "simple",
+				"value": ""
+			},
+			"request_token": {
+				"in": "header",
+				"type": "string",
+				"description": "User's token making the request.",
+				"name": "request_token",
+				"required": true,
+				"style": "simple",
+				"value": ""
+			},
+			"twilio_account_id": {
+				"name": "twilio_account_id",
+				"required": true,
+				"description": "Twilio account ID",
+				"in": "query",
+				"type": "string",
+				"value": ""
+			},
+			"show_deleted": {
+				"name": "show_deleted",
+				"required": false,
+				"type": "boolean",
+				"description": "Include deleted items.",
+				"value": "false",
+				"in": "query"
+			},
+			"id": {
+				"name": "id",
+				"required": false,
+				"description": "Get by exact ID.",
+				"in": "query",
+				"type": "integer"
+			},
+			"phone": {
+				"name": "phone",
+				"required": false,
+				"description": "Get by exact phone.",
+				"in": "query",
+				"value": "",
+				"type": "string"
+			},
+			"phone_number": {
+				"name": "phone_number",
+				"required": false,
+				"description": ".",
+				"in": "query",
+				"value": "",
+				"type": "string"
+			},
+			"keyword": {
+				"name": "keyword",
+				"required": false,
+				"type": "string",
+				"description": "Keyword to search for in lead first_name, last_name, and email fields.",
+				"in": "query"
+			},
+			"order": {
+				"name": "order",
+				"required": false,
+				"type": "string",
+				"description": ".",
+				"in": "query",
+				"value": "[[\"id\",\"ASC\"]]"
+			},
+			"required_id": {
+				"name": "id",
+				"required": true,
+				"description": "Attribute ID.",
+				"in": "query",
+				"type": "integer | string"
+			},
+			"required_object_id": {
+				"name": "object_id",
+				"required": true,
+				"description": "The referenced object's public ID (e.g. lead_id, case_id, communication_id).",
+				"in": "query",
+				"type": "integer | string"
+			},
+			"required_object_type": {
+				"name": "object_type",
+				"required": true,
+				"description": "The referenced object type (e.g. lead, case, communication) or table name (e.g. tbllead).",
+				"in": "query",
+				"type": "string",
+				"value": "lead"
+			},
+			"required_attachment": {
+				"name": "attachment",
+				"required": true,
+				"description": "Base64 encoded attachment (optionally a data URL).",
+				"in": "query",
+				"type": "string"
+			},
+			"required_mime": {
+				"name": "mime",
+				"required": true,
+				"description": "MIME type (e.g. image/png).",
+				"in": "query",
+				"type": "string",
+				"value": "image/png"
+			},
+			"required_file_name": {
+				"name": "file_name",
+				"required": true,
+				"description": "Original filename.",
+				"in": "query",
+				"type": "string",
+				"value": "example.png"
+			},
+			"required_file_extension": {
+				"name": "file_extension",
+				"required": true,
+				"description": "File extension (jpg, png, mp4, etc.).",
+				"in": "query",
+				"type": "string",
+				"value": "png"
+			},
+			"required_name": {
+				"name": "name",
+				"value": "Test Name",
+				"required": true,
+				"description": "Attribute name.",
+				"in": "query",
+				"type": "string"
+			},
+			"code": {
+				"name": "code",
+				"value": "en",
+				"required": false,
+				"description": "Language code (exact).",
+				"in": "query",
+				"type": "string"
+			},
+			"required_code": {
+				"name": "code",
+				"value": "en",
+				"required": true,
+				"description": "Language code.",
+				"in": "query",
+				"type": "string"
+			},
+			"required_flag": {
+				"name": "flag",
+				"value": "Flag",
+				"required": true,
+				"description": "Language flag label.",
+				"in": "query",
+				"type": "string"
+			},
+			"required_text": {
+				"name": "text",
+				"value": "Hello world",
+				"required": true,
+				"description": "Text to translate.",
+				"in": "query",
+				"type": "string"
+			},
+			"required_source_code": {
+				"name": "source_code",
+				"value": "en",
+				"required": true,
+				"description": "Source language code.",
+				"in": "query",
+				"type": "string"
+			},
+			"required_target_code": {
+				"name": "target_code",
+				"value": "es",
+				"required": true,
+				"description": "Target language code.",
+				"in": "query",
+				"type": "string"
+			},
+			"required_email": {
+				"name": "email",
+				"required": true,
+				"description": "Email Address.",
+				"in": "query",
+				"type": "string",
+				"format": "email"
+			},
+			"required_first_name": {
+				"name": "first_name",
+				"required": true,
+				"description": "First Name.",
+				"in": "query",
+				"type": "string"
+			},
+			"required_last_name": {
+				"name": "last_name",
+				"required": true,
+				"description": "Last Name.",
+				"in": "query",
+				"type": "string"
+			},
+			"email": {
+				"name": "email",
+				"required": false,
+				"description": "Email Address.",
+				"in": "query",
+				"type": "string",
+				"format": "email"
+			},
+			"first_name": {
+				"name": "first_name",
+				"required": false,
+				"description": "First Name.",
+				"in": "query",
+				"type": "string"
+			},
+			"last_name": {
+				"name": "last_name",
+				"required": false,
+				"description": "Last Name.",
+				"in": "query",
+				"type": "string"
+			},
+			"logo": {
+				"name": "logo",
+				"required": false,
+				"description": "Logo.",
+				"in": "query",
+				"type": "string"
+			},
+			"required_company_id": {
+				"name": "company_id",
+				"required": true,
+				"type": "integer | string",
+				"value": "",
+				"description": "Company ID",
+				"in": "query"
+			},
+			"company_id": {
+				"name": "company_id",
+				"required": false,
+				"description": "Company ID",
+				"in": "query",
+				"type": "integer | string"
+			},
+			"required_department_id": {
+				"name": "department_id",
+				"required": true,
+				"description": "Department ID",
+				"in": "query",
+				"type": "integer | string"
+			},
+			"department_id": {
+				"name": "department_id",
+				"required": false,
+				"description": "Department ID",
+				"in": "query",
+				"type": "integer | string"
+			},
+			"required_user_id": {
+				"name": "user_id",
+				"required": true,
+				"type": "integer | string",
+				"description": "The user id.",
+				"in": "query"
+			},
+			"user_id": {
+				"name": "user_id",
+				"required": false,
+				"description": "The user id.",
+				"in": "query",
+				"type": "integer | string"
+			},
+			"required_department_queue_id": {
+				"name": "department_queue_id",
+				"required": true,
+				"description": "Department queue ID",
+				"in": "query",
+				"type": "integer | string"
+			},
+			"department_queue_id": {
+				"name": "department_queue_id",
+				"required": false,
+				"description": "Department queue ID",
+				"in": "query",
+				"type": "integer | string"
+			},
+			"required_department_group_id": {
+				"name": "department_group_id",
+				"required": true,
+				"description": "Department group ID",
+				"in": "query",
+				"type": "integer | string"
+			},
+			"department_group_id": {
+				"name": "department_group_id",
+				"required": false,
+				"description": "Department group ID",
+				"in": "query",
+				"type": "integer | string"
+			},
+			"description": {
+				"name": "description",
+				"required": false,
+				"description": "Description field.",
+				"in": "query",
+				"type": "string"
+			},
+			"required_criteria": {
+				"name": "criteria",
+				"required": true,
+				"description": "Filter criteria key",
+				"in": "query",
+				"type": "string"
+			},
+			"criteria": {
+				"name": "criteria",
+				"required": false,
+				"description": "Filter criteria key",
+				"in": "query",
+				"type": "string"
+			},
+			"required_operand": {
+				"name": "operand",
+				"required": true,
+				"description": "Filter operand",
+				"in": "query",
+				"type": "string"
+			},
+			"operand": {
+				"name": "operand",
+				"required": false,
+				"description": "Filter operand",
+				"in": "query",
+				"type": "string"
+			},
+			"required_value": {
+				"name": "value",
+				"required": true,
+				"description": "Filter value",
+				"in": "query",
+				"type": "string"
+			},
+			"value": {
+				"name": "value",
+				"required": false,
+				"description": "Filter value",
+				"in": "query",
+				"type": "string"
+			},
+			"user_ids": {
+				"name": "user_ids",
+				"required": false,
+				"description": "User IDs (array).",
+				"in": "query",
+				"type": "array",
+				"value": "[7]"
+			},
+			"company_ids": {
+				"name": "company_ids",
+				"required": false,
+				"description": "Company IDs (array).",
+				"in": "query",
+				"type": "array",
+				"value": "[5]"
+			},
+			"department_ids": {
+				"name": "department_ids",
+				"required": false,
+				"description": "Department IDs (array).",
+				"in": "query",
+				"type": "array",
+				"value": "[5]"
+			},
+			"required_contacted": {
+				"name": "contacted",
+				"required": true,
+				"type": "integer",
+				"value": "1",
+				"description": "Contacted flag.",
+				"in": "query"
+			},
+			"required_dnc": {
+				"name": "dnc",
+				"required": true,
+				"type": "integer",
+				"value": "0",
+				"description": "DNC flag.",
+				"in": "query"
+			},
+			"required_visible": {
+				"name": "visible",
+				"required": true,
+				"type": "integer",
+				"value": "1",
+				"description": "If dispostition is a button(1) or in a dropdown(2).",
+				"in": "query"
+			},
+			"source_id": {
+				"name": "source_id",
+				"required": false,
+				"description": "The source id.",
+				"in": "query",
+				"type": "integer | string"
+			},
+			"service_id": {
+				"name": "service_id",
+				"required": false,
+				"description": "The service id.",
+				"in": "query",
+				"type": "integer | string"
+			},
+			"note": {
+				"name": "note",
+				"required": false,
+				"description": "Note.",
+				"in": "query",
+				"type": "integer"
+			},
+			"required_country_code": {
+				"name": "country_code",
+				"required": true,
+				"type": "string",
+				"value": "1",
+				"format": "phone",
+				"description": "Country Code.",
+				"in": "query"
+			},
+			"required_area_code": {
+				"name": "area_code",
+				"required": true,
+				"type": "string",
+				"value": "707",
+				"format": "phone",
+				"description": "Area code.",
+				"in": "query"
+			},
+			"required_prefix": {
+				"name": "prefix",
+				"required": true,
+				"type": "string",
+				"value": "475",
+				"format": "phone",
+				"description": "Prefix.",
+				"in": "query"
+			},
+			"required_line_number": {
+				"name": "line_number",
+				"required": true,
+				"type": "string",
+				"value": "8735",
+				"format": "phone",
+				"description": "phone number.",
+				"in": "query"
+			},
+			"landline": {
+				"name": "landline",
+				"required": false,
+				"type": "string",
+				"value": "(555)555-5555",
+				"format": "phone",
+				"description": "Landline phone number eg. (555)555-5555, 555-555-5555, 5555555555, +155555555555, 15555555555",
+				"in": "query"
+			},
+			"mobile": {
+				"name": "mobile",
+				"required": false,
+				"type": "string",
+				"value": "(555)555-5555",
+				"format": "phone",
+				"description": "Mobile phone number eg. (555)555-5555, 555-555-5555, 5555555555, +155555555555, 15555555555",
+				"in": "query"
+			},
+			"avatar": {
+				"name": "avatar",
+				"required": false,
+				"description": "User Avatar",
+				"in": "query",
+				"type": "string",
+				"value": "user-placeholder.svg"
+			},
+			"slug": {
+				"name": "slug",
+				"required": false,
+				"description": "Slug / body / text",
+				"in": "query",
+				"type": "string",
+				"value": ""
+			},
+			"role_id": {
+				"name": "role_id",
+				"required": false,
+				"type": "integer | string",
+				"value": "",
+				"description": "The role id.",
+				"in": "query"
+			},
+			"required_role_id": {
+				"name": "role_id",
+				"required": true,
+				"type": "integer | string",
+				"value": "",
+				"description": "The role id.",
+				"in": "query"
+			},
+			"required_status_id": {
+				"name": "status_id",
+				"required": true,
+				"type": "integer | string",
+				"value": "",
+				"description": "The status id.",
+				"in": "query"
+			},
+			"status_id": {
+				"name": "status_id",
+				"required": false,
+				"type": "integer | string",
+				"value": "",
+				"description": "The status id.",
+				"in": "query"
+			},
+			"tab_status_id": {
+				"name": "tab_status_id",
+				"required": false,
+				"type": "integer | string",
+				"value": "",
+				"description": "The tab status id.",
+				"in": "query"
+			},
+			"vertical_id": {
+				"name": "vertical_id",
+				"required": false,
+				"type": "integer | string",
+				"value": "2ae2f0986ea6bf06803504aa135e038e",
+				"description": "The vertical id.",
+				"in": "query"
+			},
+			"lead_id": {
+				"name": "lead_id",
+				"required": false,
+				"type": "integer | string",
+				"value": "",
+				"description": "The lead id.",
+				"in": "query"
+			},
+			"required_lead_id": {
+				"name": "lead_id",
+				"required": true,
+				"type": "integer | string",
+				"value": "",
+				"description": "The lead id.",
+				"in": "query"
+			},
+			"case_id": {
+				"name": "case_id",
+				"required": false,
+				"type": "integer | string",
+				"value": "",
+				"description": "The case id.",
+				"in": "query"
+			},
+			"required_case_id": {
+				"name": "case_id",
+				"required": true,
+				"type": "integer | string",
+				"value": "",
+				"description": "The case id.",
+				"in": "query"
+			},
+			"required_city": {
+				"name": "city",
+				"required": true,
+				"type": "string",
+				"value": "",
+				"description": "The city.",
+				"in": "query"
+			},
+			"required_state": {
+				"name": "state",
+				"required": true,
+				"type": "string",
+				"value": "",
+				"description": "The state.",
+				"in": "query"
+			},
+			"required_zip": {
+				"name": "zip",
+				"required": true,
+				"type": "string",
+				"value": "",
+				"description": "The zip code.",
+				"in": "query"
+			},
+			"required_tz": {
+				"name": "tz",
+				"required": true,
+				"type": "string",
+				"value": "",
+				"description": "The timezone code.",
+				"in": "query"
+			},
+			"required_dst": {
+				"name": "dst",
+				"required": true,
+				"type": "integer",
+				"value": "",
+				"description": "DST flag.",
+				"in": "query"
+			},
+			"required_default": {
+				"name": "default",
+				"required": true,
+				"type": "integer",
+				"value": "1",
+				"description": "Default flag.",
+				"in": "query"
+			},
+			"default": {
+				"name": "default",
+				"required": false,
+				"type": "integer",
+				"value": "1",
+				"description": "Default flag.",
+				"in": "query"
+			},
+			"required_note": {
+				"name": "note",
+				"required": true,
+				"type": "string",
+				"value": "",
+				"description": "A note.",
+				"in": "query"
+			},
+			"read": {
+				"name": "read",
+				"required": false,
+				"type": "array",
+				"value": "[0, 1]",
+				"description": "Read == 1 or not == 0.",
+				"in": "query"
+			},
+			"deletedArray": {
+				"name": "deleted",
+				"required": false,
+				"type": "array",
+				"value": "[0]",
+				"description": "Deleted == 1 or not == 0.",
+				"in": "query"
+			},
+			"done": {
+				"name": "done",
+				"required": false,
+				"type": "integer",
+				"value": "0",
+				"description": "Done or not.",
+				"in": "query"
+			},
+			"active": {
+				"name": "active",
+				"required": false,
+				"type": "integer",
+				"value": "0",
+				"description": "Active or not.",
+				"in": "query"
+			},
+			"type_id": {
+				"name": "type_id",
+				"required": false,
+				"type": "integer",
+				"value": "0",
+				"description": "Type ID",
+				"in": "query"
+			},
+			"available": {
+				"name": "available",
+				"required": false,
+				"type": "integer",
+				"value": "0",
+				"description": "Available or not",
+				"in": "query"
+			},
+			"online": {
+				"name": "online",
+				"required": false,
+				"type": "integer",
+				"value": "0",
+				"description": "Online (1) or Offline (0)",
+				"in": "query"
+			},
+			"colour": {
+				"name": "colour",
+				"required": false,
+				"type": "integer",
+				"value": "0",
+				"description": "Colour: 0 - grey, 1 - green, 2 - red, 3 - orange, 4 - yellow",
+				"in": "query"
+			},
+			"acw": {
+				"name": "acw",
+				"required": false,
+				"type": "integer",
+				"value": "0",
+				"description": "After Call Work 0 (No) or 1 (Yes)",
+				"in": "query"
+			},
+			"pause": {
+				"name": "pause",
+				"required": false,
+				"type": "integer",
+				"value": "0",
+				"description": "Pause Yes (1) or No (0)",
+				"in": "query"
+			},
+			"required_friendly_name": {
+				"name": "friendly_name",
+				"required": true,
+				"type": "string",
+				"value": "",
+				"description": "Friendly name for users",
+				"in": "query"
+			},
+			"required_table_name": {
+				"name": "table_name",
+				"required": true,
+				"type": "string",
+				"value": "",
+				"description": "DB table name for users (prefixed / postfixed)",
+				"in": "query"
+			},
+			"seo_name": {
+				"name": "seo_name",
+				"required": false,
+				"type": "string",
+				"value": "",
+				"description": "SEO name (for SEO purposes) (optional)",
+				"in": "query"
+			},
+			"page_title": {
+				"name": "page_title",
+				"required": false,
+				"type": "string",
+				"value": "",
+				"description": "Page title to display to user (optional)",
+				"in": "query"
+			},
+			"email_from": {
+				"name": "email_from",
+				"required": false,
+				"type": "string",
+				"value": "",
+				"description": "Email to send email FROM (optional)",
+				"in": "query"
+			},
+			"email_subject": {
+				"name": "email_subject",
+				"required": false,
+				"type": "string",
+				"value": "",
+				"description": "Email subject (optional)",
+				"in": "query"
+			},
+			"cc": {
+				"name": "cc",
+				"required": false,
+				"type": "string",
+				"value": "",
+				"description": "Email CC (optional)",
+				"in": "query"
+			},
+			"bcc": {
+				"name": "bcc",
+				"required": false,
+				"type": "string",
+				"value": "",
+				"description": "Email bCC (optional)",
+				"in": "query"
+			},
+			"support_email": {
+				"name": "support_email",
+				"required": false,
+				"type": "string",
+				"value": "",
+				"description": "Support email to display (optional)",
+				"in": "query"
+			},
+			"support_phone": {
+				"name": "support_phone",
+				"required": false,
+				"type": "string",
+				"value": "",
+				"description": "Support phone # to display (optional)",
+				"in": "query"
+			},
+			"confirmation_email": {
+				"name": "confirmation_email",
+				"required": false,
+				"type": "string",
+				"value": "",
+				"description": "Confirmation email (optional)",
+				"in": "query"
+			},
+			"confirmation_subject": {
+				"name": "confirmation_subject",
+				"required": false,
+				"type": "string",
+				"value": "",
+				"description": "Confirmation subject (optional)",
+				"in": "query"
+			},
+			"confirmation_body": {
+				"name": "confirmation_body",
+				"required": false,
+				"type": "string",
+				"value": "",
+				"description": "Confirmation body (optional)",
+				"in": "query"
+			},
+			"confirmation_from": {
+				"name": "confirmation_from",
+				"required": false,
+				"type": "string",
+				"value": "",
+				"description": "Confirmation FROM (optional)",
+				"in": "query"
+			},
+			"thank_you_page": {
+				"name": "thank_you_page",
+				"required": false,
+				"type": "string",
+				"value": "",
+				"description": "Thank you page to go to when complete (optional)",
+				"in": "query"
+			},
+			"submit_button_text": {
+				"name": "submit_button_text",
+				"required": false,
+				"type": "string",
+				"value": "",
+				"description": "Change the default submit button text (optional)",
+				"in": "query"
+			},
+			"cancel_button_text": {
+				"name": "cancel_button_text",
+				"required": false,
+				"type": "string",
+				"value": "",
+				"description": "Change the default cancel button text (optional)",
+				"in": "query"
+			},
+			"comments": {
+				"name": "comments",
+				"required": false,
+				"type": "string",
+				"value": "",
+				"description": "Comments (optional)",
+				"in": "query"
+			},
+			"group_id": {
+				"name": "group_id",
+				"required": false,
+				"type": "integer",
+				"value": "",
+				"description": "Group ID (optional)",
+				"in": "query"
+			},
+			"published": {
+				"name": "published",
+				"required": false,
+				"type": "integer",
+				"value": 0,
+				"description": "1 == published, 0 not published",
+				"in": "query"
+			},
+			"form_id": {
+				"name": "form_id",
+				"required": false,
+				"type": "integer",
+				"description": "form ID to get",
+				"in": "query"
+			},
+			"phones": {
+				"name": "phones",
+				"required": false,
+				"type": "array",
+				"description": "Phones to buy (array of JSON objects)",
+				"in": "query",
+				"items": {
+					"type": "object",
+					"name": "phone",
+					"properties": {
+						"phone_number": {
+							"type": "string",
+							"required": true,
+							"default": "+18179044116"
+						},
+						"user_id": {
+							"type": "string | null",
+							"nullable": true,
+							"default": null
+						},
+						"company_id": {
+							"type": "string | null",
+							"nullable": true,
+							"default": null
+						},
+						"department_id": {
+							"type": "string | null",
+							"nullable": true,
+							"default": null
+						}
+					},
+					"required": true
+				}
+			},
+			"bundle_sid": {
+				"name": "bundle_sid",
+				"required": true,
+				"type": "string",
+				"description": "The twilio sid for the bundle",
+				"in": "query",
+				"value": ""
+			},
+			"compliance_category_id": {
+				"name": "compliance_category_id",
+				"required": true,
+				"type": "string",
+				"description": "The compliance category ID",
+				"in": "query",
+				"value": "2ae2f0986ea6bf06803504aa135e038e"
+			},
+			"area_code": {
+				"name": "area_code",
+				"required": false,
+				"type": "string",
+				"description": "The area code",
+				"in": "query",
+				"value": ""
+			},
+			"country_code": {
+				"name": "country_code",
+				"required": false,
+				"type": "string",
+				"description": "The country code",
+				"in": "query",
+				"value": "US"
+			},
+			"auto_dial": {
+				"name": "auto_dial",
+				"required": false,
+				"type": "integer",
+				"description": "The auto dial status (1 == auto dial, 0 == manual dial)",
+				"in": "query",
+				"value": 0
+			},
+			"required_user_phone_id": {
+				"name": "user_phone_id",
+				"required": true,
+				"type": "integer",
+				"description": "The user phone ID",
+				"in": "query"
+			}
+		}
+	}
+}

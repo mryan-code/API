@@ -1,0 +1,41 @@
+{
+	"git.defaultBranchName": "master",
+	"js/ts.validate.enable": true,
+	"editor.defaultFormatter": "esbenp.prettier-vscode",
+	"editor.formatOnSave": true,
+	"eslint.enable": true,
+	"prettier.configPath": ".prettierrc",
+	"prettier.ignorePath": ".prettierignore",
+	"markdownlint.ignore": ["**/ai_plans/*.md", "prompts.md"],
+	"markdownlint.config": {
+		"MD025": false,
+		"MD024": false,
+		"MD022": false,
+		"MD007": false,
+		"MD005": false,
+		"MD013": false,
+		"MD034": false,
+		"MD041": false,
+		"MD029": false,
+		"MD047": false,
+		"MD032": false
+	},
+	"errorLens.codeLensEnabled": true,
+	"errorLens.editorHoverPartsEnabled": {
+		"messageEnabled": true,
+		"sourceCodeEnabled": true,
+		"buttonsEnabled": true
+	},
+	"errorLens.gutterIconsEnabled": true,
+	"files.watcherExclude": {
+		"**/node_modules/**": true,
+		"**/dist/**": true,
+		"**/build/**": true,
+		"**/.output/**": true,
+		"**/coverage/**": true
+	},
+	"js/ts.tsserver.experimental.enableProjectDiagnostics": false,
+	"js/ts.tsserver.watchOptions": {
+		"excludeDirectories": ["**/node_modules/**"]
+	}
+}

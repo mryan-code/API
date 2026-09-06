@@ -1,0 +1,31 @@
+{
+	"compilerOptions": {
+		"target": "es2022",
+		"module": "commonjs",
+		"outDir": "./dist",
+		"rootDir": "./src",
+		"esModuleInterop": true,
+		"resolveJsonModule": true,
+		"skipLibCheck": true
+	},
+	"include": [
+		"src/**/*",
+		"! .env",
+		"src/swagger.json",
+		"src/swagger.js",
+		"kokoro-js.d.ts"
+	],
+	"exclude": [
+		"node_modules",
+		".env",
+		"*.mike.ts",
+		"**/*.mike.ts",
+		"**/mike.ts",
+		"*.matt.ts",
+		"*.dev.ts"
+	],
+	"lib": ["es2022"],
+	"types": ["node", "express"],
+	"typeRoots": ["node_modules/@types"],
+	"assets": ["**/swagger.js"]
+}
