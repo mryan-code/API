@@ -134,13 +134,29 @@ function isPortListeningFromOutput(output, httpPort) {
 }
 
 function isPortListening(httpPort) {
+	// Prefer lsof: works on macOS and Linux; Linux netstat -ltn flags are invalid on Darwin.
+	const lsofOutput = runCommand("lsof", [
+		"-nP",
+		`-iTCP:${httpPort}`,
+		"-sTCP:LISTEN",
+	]);
+	if (lsofOutput.trim()) {
+		return true;
+	}
+
 	const ssOutput = runCommand("ss", ["-ltn"]);
 	if (ssOutput && isPortListeningFromOutput(ssOutput, httpPort)) {
 		return true;
 	}
 
-	const netstatOutput = runCommand("netstat", ["-ltn"]);
-	if (netstatOutput && isPortListeningFromOutput(netstatOutput, httpPort)) {
+	const netstatLinux = runCommand("netstat", ["-ltn"]);
+	if (netstatLinux && isPortListeningFromOutput(netstatLinux, httpPort)) {
+		return true;
+	}
+
+	// macOS netstat uses dotted ports (*.9876) and does not support Linux -ltn flags.
+	const netstatDarwin = runCommand("netstat", ["-an", "-p", "tcp"]);
+	if (netstatDarwin && isPortListeningFromOutput(netstatDarwin, httpPort)) {
 		return true;
 	}
 
@@ -234,11 +250,34 @@ function stopPids(pids, signal) {
 
 function forceKillByPort(httpPort) {
 	// Last-resort port reclaim when PID signaling left the LISTEN socket open.
+	const lsofPids = parsePidList(
+		runCommand("lsof", ["-ti", `tcp:${httpPort}`, "-sTCP:LISTEN"]),
+	);
+	for (const pid of lsofPids) {
+		signalPid(pid, "SIGKILL");
+	}
+
 	if (runCommand("fuser", ["-k", "-9", `${httpPort}/tcp`])) {
 		return;
 	}
 
 	runCommand("fuser", ["-k", `${httpPort}/tcp`]);
+}
+
+function stopMatchingPm2Processes() {
+	// High-risk operation: delete PM2 apps for this repo so SIGKILL cannot fight auto-restart.
+	if (!fs.existsSync(path.join(__dirname, "stop-pm2.js"))) {
+		return;
+	}
+
+	try {
+		execFileSync(process.execPath, [path.join(__dirname, "stop-pm2.js")], {
+			stdio: "inherit",
+			cwd: appRoot,
+		});
+	} catch (error) {
+		console.error("PM2 stop helper failed during port reclaim; continuing.");
+	}
 }
 
 async function main() {
@@ -299,6 +338,8 @@ async function main() {
 			console.log(
 				`Port ${httpPort} is still open after ${stopSignal}; sending SIGKILL to remaining process(es): ${killTargets.join(", ")}`,
 			);
+			// PM2 renames (e.g. sz-api vs api) keep respawning unless deleted before SIGKILL.
+			stopMatchingPm2Processes();
 			stopPids(killTargets, "SIGKILL");
 			forceKillByPort(httpPort);
 		}

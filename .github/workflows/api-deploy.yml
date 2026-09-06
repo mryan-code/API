@@ -92,10 +92,14 @@ jobs:
           }
 
           has_listening_port() {
-            if command -v ss >/dev/null 2>&1; then
+            # Prefer lsof: macOS netstat does not support Linux -ltn listening flags.
+            if command -v lsof >/dev/null 2>&1; then
+              lsof -nP -iTCP:"${SERVER_PORT}" -sTCP:LISTEN >/dev/null 2>&1
+            elif command -v ss >/dev/null 2>&1; then
               ss -ltn | awk '{ print $4 }' | grep -Eq "[:.]${SERVER_PORT}$"
             elif command -v netstat >/dev/null 2>&1; then
-              netstat -ltn | awk '{ print $4 }' | grep -Eq "[:.]${SERVER_PORT}$"
+              netstat -an -p tcp 2>/dev/null | grep -i LISTEN | grep -Eq "[:.]${SERVER_PORT}([[:space:]]|$)" \
+                || netstat -ltn 2>/dev/null | awk '{ print $4 }' | grep -Eq "[:.]${SERVER_PORT}$"
             else
               return 1
             fi
@@ -305,6 +309,9 @@ jobs:
                 npm run stop:pm2 || true
               fi
               stop_by_port_signal KILL || true
+              if command -v lsof >/dev/null 2>&1; then
+                lsof -nP -tiTCP:"${SERVER_PORT}" -sTCP:LISTEN | xargs kill -KILL 2>/dev/null || true
+              fi
               if command -v fuser >/dev/null 2>&1; then
                 run_privileged fuser -k -9 "${SERVER_PORT}/tcp" 2>/dev/null || true
               fi
@@ -539,10 +546,14 @@ jobs:
           rm -f deploy-start.log
 
           has_listening_port() {
-            if command -v ss >/dev/null 2>&1; then
+            # Prefer lsof: macOS netstat does not support Linux -ltn listening flags.
+            if command -v lsof >/dev/null 2>&1; then
+              lsof -nP -iTCP:"${SERVER_PORT}" -sTCP:LISTEN >/dev/null 2>&1
+            elif command -v ss >/dev/null 2>&1; then
               ss -ltn | awk '{ print $4 }' | grep -Eq "[:.]${SERVER_PORT}$"
             elif command -v netstat >/dev/null 2>&1; then
-              netstat -ltn | awk '{ print $4 }' | grep -Eq "[:.]${SERVER_PORT}$"
+              netstat -an -p tcp 2>/dev/null | grep -i LISTEN | grep -Eq "[:.]${SERVER_PORT}([[:space:]]|$)" \
+                || netstat -ltn 2>/dev/null | awk '{ print $4 }' | grep -Eq "[:.]${SERVER_PORT}$"
             elif command -v nc >/dev/null 2>&1; then
               nc -z 127.0.0.1 "${SERVER_PORT}" >/dev/null 2>&1
             else
@@ -573,6 +584,13 @@ jobs:
           # Refuse to start while the listen port is still held; EADDRINUSE would fail later with a weaker signal.
           if has_listening_port; then
             echo "Port ${SERVER_PORT} still open before start; attempting final force-kill." >&2
+            if [ -f "scripts/stop-pm2.js" ]; then
+              npm run stop:pm2 || true
+            fi
+            if command -v lsof >/dev/null 2>&1; then
+              # High-risk operation: force-kill whatever still holds the deploy listen port.
+              lsof -nP -tiTCP:"${SERVER_PORT}" -sTCP:LISTEN | xargs kill -KILL 2>/dev/null || true
+            fi
             if command -v fuser >/dev/null 2>&1; then
               fuser -k -9 "${SERVER_PORT}/tcp" 2>/dev/null || true
             fi
@@ -581,7 +599,9 @@ jobs:
           fi
           if has_listening_port; then
             echo "Cannot start: port ${SERVER_PORT} is still in use after stop attempts." >&2
-            ss -ltnp 2>/dev/null | grep -E "[:.]${SERVER_PORT}[[:space:]]" || netstat -tlnp 2>/dev/null | grep -E "[:.]${SERVER_PORT}[[:space:]]" || true
+            lsof -nP -iTCP:"${SERVER_PORT}" -sTCP:LISTEN 2>/dev/null || true
+            ss -ltnp 2>/dev/null | grep -E "[:.]${SERVER_PORT}[[:space:]]" || netstat -an -p tcp 2>/dev/null | grep -E "[:.]${SERVER_PORT}" || true
+            pm2 list 2>/dev/null || true
             exit 1
           fi
           startup_mode="nohup"

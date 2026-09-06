@@ -43,4 +43,15 @@ describe("stop script helpers", () => {
 
 		expect(parseNetstatPids(netstatOutput, "9876")).toEqual(["33025"]);
 	});
+
+	test("isPortListeningFromOutput detects macOS dotted listen addresses", () => {
+		const netstatOutput = [
+			"Active Internet connections",
+			"tcp46      0      0  *.9876                 *.*                    LISTEN",
+			"tcp4       0      0  127.0.0.1.5432         *.*                    LISTEN",
+		].join("\n");
+
+		expect(isPortListeningFromOutput(netstatOutput, "9876")).toBe(true);
+		expect(isPortListeningFromOutput(netstatOutput, "3000")).toBe(false);
+	});
 });
