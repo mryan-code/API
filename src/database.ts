@@ -125,21 +125,6 @@ const initModels = async function (): Promise<types.KeyValue> {
 			foreignKey: "role_id",
 			targetKey: "id",
 		});
-		// models.User.hasMany(models.UserRole, { foreignKey: "user_id", sourceKey: "id" });
-		// models.Role.hasMany(models.UserRole, { foreignKey: "role_id", sourceKey: "id" });
-		// models.UserRole.hasOne(models.User, { foreignKey: "id", sourceKey: "user_id" });
-		// models.UserRole.hasOne(models.Role, { foreignKey: "id", sourceKey: "role_id" });
-
-		models.initPage((globalThis as unknown as types.KeyValue).sequelize);
-		models.initSection((globalThis as unknown as types.KeyValue).sequelize);
-		models.Page.hasMany(models.Section, {
-			foreignKey: "page_id",
-			sourceKey: "id",
-		});
-		models.Section.hasMany(models.Page, {
-			foreignKey: "section_id",
-			sourceKey: "id",
-		});
 		models.initErrorLog(
 			(globalThis as unknown as types.KeyValue).sequelize,
 		);

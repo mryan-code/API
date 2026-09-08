@@ -36,24 +36,6 @@ routes.post("/registeration", async (req: Request, res: Response) => {
 	await Action.Action();
 });
 
-// Page
-routes.get("/get-page", async (req: Request, res: Response) => {
-	const Action = new actions.PageAction(req, res, false);
-	await Action.Action();
-});
-routes.post("/add-page", async (req: Request, res: Response) => {
-	const Action = new actions.GenericAction(req, res, true, [models.Page]);
-	await Action.Action();
-});
-routes.post("/save-page", async (req: Request, res: Response) => {
-	const Action = new actions.GenericAction(req, res, true, [models.Page]);
-	await Action.Action();
-});
-routes.delete("/delete-page", async (req: Request, res: Response) => {
-	const Action = new actions.GenericAction(req, res, true, [models.Page]);
-	await Action.Action();
-});
-
 // User
 routes.post("/add-user", async (req: Request, res: Response) => {
 	const Action = new actions.UserAction(req, res, true);

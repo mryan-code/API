@@ -33,7 +33,7 @@ const startServer = async () => {
 			for await (const module of Object.keys(returnValue)) {
 				if (
 					globalThis.globalVars.GLOBAL_DEBUG_LEVEL === "info" ||
-					globalThis.globalVars.DEBUG_USER === "mryan"
+					globalThis.globalVars.DEBUG_USER === "foobar"
 				) {
 					console.log(
 						module +
@@ -52,35 +52,40 @@ const startServer = async () => {
 	});
 
 	if (dbLoaded) {
-		let userQuery: types.KeyValue | null = await models.User.findOne({
-			attributes: [["id", "user_id"], "login_token"],
-			raw: true,
-			where: {
-				id: { [Op.eq]: globalThis.globalVars.USER_ID },
-			},
-			logging: (sql: string) => {
-				// if (globalThis.globalVars.GLOBAL_DEBUG_LEVEL === "info") {
-				// 	console.log(sql.toString());
-				// }
-			},
-			limit: 1,
-		});
-		if (userQuery) {
-			userQuery = (await functions.formatResults(userQuery, [
-				"user_id",
-			])) as types.KeyValue;
-			console.log(
-				util.inspect(
-					("login_token: Bearer " +
-						(await functions.generateJWT({
-							user_id: userQuery.user_id,
-							login_token: userQuery.login_token,
-						}))) as string,
-					false,
-					null,
-					true /* enable colors */,
-				),
-			);
+		if (
+			globalThis.globalVars.USER_ID &&
+			globalThis.globalVars.DEBUG_USER === "foobar"
+		) {
+			let userQuery: types.KeyValue | null = await models.User.findOne({
+				attributes: [["id", "user_id"], "login_token"],
+				raw: true,
+				where: {
+					id: { [Op.eq]: globalThis.globalVars.USER_ID },
+				},
+				logging: (sql: string) => {
+					// if (globalThis.globalVars.GLOBAL_DEBUG_LEVEL === "info") {
+					// 	console.log(sql.toString());
+					// }
+				},
+				limit: 1,
+			});
+			if (userQuery) {
+				userQuery = (await functions.formatResults(userQuery, [
+					"user_id",
+				])) as types.KeyValue;
+				console.log(
+					util.inspect(
+						("login_token: Bearer " +
+							(await functions.generateJWT({
+								user_id: userQuery.user_id,
+								login_token: userQuery.login_token,
+							}))) as string,
+						false,
+						null,
+						true /* enable colors */,
+					),
+				);
+			}
 		}
 
 		if (globalThis.globalVars.HTTP_PROTOCOL === "https") {
@@ -118,7 +123,7 @@ const startServer = async () => {
 							if (
 								globalThis.globalVars.GLOBAL_DEBUG_LEVEL ===
 									"info" ||
-								globalThis.globalVars.DEBUG_USER === "mryan"
+								globalThis.globalVars.DEBUG_USER === "foobar"
 							) {
 								console.log(
 									module +
