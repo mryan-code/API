@@ -7,7 +7,7 @@ import websockets from "./websockets";
 import { Op } from "sequelize";
 import * as models from "./models";
 import util from "util";
-import { readFileSync } from "fs";
+import { readFileSync, existsSync } from "fs";
 import path from "path";
 import database from "./database";
 import app from "./app";
@@ -84,19 +84,25 @@ const startServer = async () => {
 		}
 
 		if (globalThis.globalVars.HTTP_PROTOCOL === "https") {
-			serverOptions = {
-				key: readFileSync(
-					path.resolve(
-						"certificates/" + process.env.NODE_ENV + "-key.pem",
-					),
+			const keyPath = readFileSync(
+				path.resolve(
+					"certificates/" + process.env.NODE_ENV + "-key.pem",
 				),
-				cert: readFileSync(
-					path.resolve(
-						"certificates/" + process.env.NODE_ENV + "-cert.pem",
-					),
+			);
+			const certPath = readFileSync(
+				path.resolve(
+					"certificates/" + process.env.NODE_ENV + "-cert.pem",
 				),
-			};
-			server = https.createServer(serverOptions, app);
+			);
+			if (existsSync(keyPath) && existsSync(certPath)) {
+				serverOptions = {
+					key: keyPath,
+					cert: certPath,
+				};
+				server = https.createServer(serverOptions, app);
+			} else {
+				server = http.createServer(app);
+			}
 		} else {
 			server = http.createServer(app);
 		}
