@@ -12,8 +12,9 @@
 		"src/**/*",
 		"! .env",
 		"src/swagger.json",
-		"src/swagger.js",
-		"kokoro-js.d.ts"
+		"src/swagger.js"
+		// Deprecated: kokoro-js was removed from dependencies.
+		// "kokoro-js.d.ts"
 	],
 	"exclude": [
 		"node_modules",

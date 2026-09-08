@@ -22,7 +22,7 @@
 		"dev:test": "node scripts/dev-test-setup.js",
 		"start:test": "node scripts/start-test-setup.js",
 		"lint": "eslint 'src/**/*.ts'",
-		"copy-files": "copyfiles -u 1 src/**/*.html src/**/*.css src/**/*.js dist/",
+		"copy-files": "node scripts/copy-files.js",
 		"debug": "grep -E '(debug 4.4.2|backslash|chalk-template|supports-hyperlinks|has-ansi|simple-swizzle|color-string|error-ex|color-name 2.0.1|is-arrayish|slice-ansi|color-convert 3.1.1|wrap-ansi 9.0.1|ansi-regex 6.2.1|supports-color 10.2.1|strip-ansi 7.1.1|chalk 5.6.1|ansi-styles 6.2.2)' package-lock.json",
 		"ngrok": "ngrok http http://localhost:9876",
 		"test": "jest --maxWorkers=25%",
@@ -40,7 +40,6 @@
 		"axios": "^1.18.0",
 		"body-parser": "^2.3.0",
 		"chalk": "^5.6.2",
-		"copyfiles": "^2.4.1",
 		"cors": "^2.8.6",
 		"cron": "^4.4.0",
 		"dayjs": "^1.11.21",
@@ -48,10 +47,9 @@
 		"eslint": "^10.5.0",
 		"express": "^5.2.1",
 		"express-form-data": "^3.0.1",
-		"fastify-helmet": "^7.1.0",
 		"file-type": "^22.0.1",
+		"helmet": "^8.3.0",
 		"jsonwebtoken": "^9.0.3",
-		"kokoro-js": "^1.2.1",
 		"moment": "^2.30.1",
 		"moment-timezone": "^0.6.2",
 		"multer": "^2.2.0",
@@ -61,7 +59,6 @@
 		"pg": "^8.16.3",
 		"pg-hstore": "^2.3.4",
 		"sequelize": "^6.37.8",
-		"sqlite3": "^6.0.1",
 		"swagger-ui-express": "^5.0.1",
 		"ts-node": "^10.9.2",
 		"typescript": "^5.9.3",
@@ -78,7 +75,12 @@
 		"ts-jest": "^29.4.11"
 	},
 	"overrides": {
-		"js-yaml": "^4.2.0",
+		"@humanfs/node": "^0.16.8",
+		"brace-expansion": "5.0.9",
+		"browserslist": "^4.28.9",
+		"glob": "^13.0.6",
+		"js-yaml": "^4.3.1",
+		"qs": "^6.16.0",
 		"sequelize": {
 			"uuid": "^11.1.1"
 		}
