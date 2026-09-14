@@ -89,17 +89,10 @@ const startServer = async () => {
 			}
 		}
 
-		// console.log("globalThis.globalVars", globalThis.globalVars);
-
 		if (globalThis.globalVars.HTTP_PROTOCOL === "https") {
 			const keyPath = "certificates/" + process.env.NODE_ENV + "-key.pem";
 			const certPath =
 				"certificates/" + process.env.NODE_ENV + "-cert.pem";
-
-			console.log("keyPath", keyPath);
-			console.log("certPath", certPath);
-			console.log("existsSync(keyPath)", fs.existsSync(keyPath));
-			console.log("existsSync(certPath)", fs.existsSync(certPath));
 			if (fs.existsSync(keyPath) && fs.existsSync(certPath)) {
 				const key = fs.readFileSync(keyPath);
 				const cert = fs.readFileSync(certPath);
