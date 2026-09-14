@@ -100,6 +100,10 @@ const startServer = async () => {
 					"certificates/" + process.env.NODE_ENV + "-cert.pem",
 				),
 			);
+			console.log("keyPath", keyPath);
+			console.log("certPath", certPath);
+			console.log("existsSync(keyPath)", existsSync(keyPath));
+			console.log("existsSync(certPath)", existsSync(certPath));
 			if (existsSync(keyPath) && existsSync(certPath)) {
 				serverOptions = {
 					key: keyPath,
