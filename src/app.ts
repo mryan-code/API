@@ -35,7 +35,7 @@ app.use(
 );
 const customSwaggerOptions: types.KeyValue = {
 	customCss:
-		".swagger-ui .topbar, .information-container { display: none; } #messageWrapper { max-height: 300px; overflow-y: scroll } .scheme-container { padding: 0px !important; }",
+		".swagger-ui .topbar, .information-container { display: none; } #messageWrapper { max-height: 300px; overflow-y: scroll } .scheme-container { padding-top: 0px !important; }",
 	// customJs: "/swagger.js",
 };
 let localSwaggerJSON = JSON.parse(JSON.stringify(swaggerJSON));
