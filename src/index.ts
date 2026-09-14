@@ -11,6 +11,7 @@ import { readFileSync, existsSync } from "fs";
 import path from "path";
 import database from "./database";
 import app from "./app";
+import { resolve, matchesGlob } from "pathe";
 
 loadEnv();
 
@@ -91,14 +92,10 @@ const startServer = async () => {
 
 		if (globalThis.globalVars.HTTP_PROTOCOL === "https") {
 			const keyPath = readFileSync(
-				path.resolve(
-					"certificates/" + process.env.NODE_ENV + "-key.pem",
-				),
+				resolve("certificates/" + process.env.NODE_ENV + "-key.pem"),
 			);
 			const certPath = readFileSync(
-				path.resolve(
-					"certificates/" + process.env.NODE_ENV + "-cert.pem",
-				),
+				resolve("certificates/" + process.env.NODE_ENV + "-cert.pem"),
 			);
 			console.log("keyPath", keyPath);
 			console.log("certPath", certPath);
