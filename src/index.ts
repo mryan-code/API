@@ -87,6 +87,8 @@ const startServer = async () => {
 			}
 		}
 
+		console.log("globalThis.globalVars", globalThis.globalVars);
+
 		if (globalThis.globalVars.HTTP_PROTOCOL === "https") {
 			const keyPath = readFileSync(
 				path.resolve(
