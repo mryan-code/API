@@ -9,6 +9,7 @@ import * as models from "./models";
 import util from "util";
 import { readFileSync, existsSync } from "fs";
 import path from "path";
+import fs from "node:fs";
 import database from "./database";
 import app from "./app";
 import { resolve, matchesGlob } from "pathe";
@@ -91,17 +92,14 @@ const startServer = async () => {
 		// console.log("globalThis.globalVars", globalThis.globalVars);
 
 		if (globalThis.globalVars.HTTP_PROTOCOL === "https") {
-			const keyPath = readFileSync(
-				resolve("certificates/" + process.env.NODE_ENV + "-key.pem"),
-			);
-			const certPath = readFileSync(
-				resolve("certificates/" + process.env.NODE_ENV + "-cert.pem"),
-			);
+			const keyPath = "certificates/" + process.env.NODE_ENV + "-key.pem";
+			const certPath =
+				"certificates/" + process.env.NODE_ENV + "-cert.pem";
 			console.log("keyPath", keyPath);
 			console.log("certPath", certPath);
-			console.log("existsSync(keyPath)", existsSync(keyPath));
-			console.log("existsSync(certPath)", existsSync(certPath));
-			if (existsSync(keyPath) && existsSync(certPath)) {
+			console.log("existsSync(keyPath)", fs.existsSync(keyPath));
+			console.log("existsSync(certPath)", fs.existsSync(certPath));
+			if (fs.existsSync(keyPath) && fs.existsSync(certPath)) {
 				serverOptions = {
 					key: keyPath,
 					cert: certPath,
