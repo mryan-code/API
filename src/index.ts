@@ -28,7 +28,6 @@ const serverHeadersTimeoutMS = 66000;
 const startServer = async () => {
 	let dbLoaded: boolean = false;
 	await database().then(async (returnValue: types.KeyValue) => {
-		console.log(returnValue);
 		if (Object.keys(returnValue).length > 0) {
 			for await (const module of Object.keys(returnValue)) {
 				if (
