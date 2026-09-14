@@ -92,10 +92,10 @@ const startServer = async () => {
 
 		if (globalThis.globalVars.HTTP_PROTOCOL === "https") {
 			const keyPath = readFileSync(
-				resolve("certificates/" + process.env.NODE_ENV + "-key.pem"),
+				resolve("/certificates/" + process.env.NODE_ENV + "-key.pem"),
 			);
 			const certPath = readFileSync(
-				resolve("certificates/" + process.env.NODE_ENV + "-cert.pem"),
+				resolve("/certificates/" + process.env.NODE_ENV + "-cert.pem"),
 			);
 			console.log("keyPath", keyPath);
 			console.log("certPath", certPath);
