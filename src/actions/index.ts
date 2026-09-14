@@ -5,3 +5,4 @@ export * from "./UserAction";
 export * from "./ErrorLogAction";
 export * from "./AppAction";
 export * from "./LLMAction";
+export * from "./PortfolioAction";

@@ -365,3 +365,16 @@
 	Puck, am_puck, m
 	Santa, am_santa, m
 - show me an insert statement
+
+# 2026-07-15 ~ create a table for the picture puzzle image
+- there should be a tblpicture_puzzle_image table
+    - id (int, auto-increment)
+    - blob (BYTEA, required)
+    - user_id (int(11), required)
+    - created (datetime, required, default current_timestamp)
+    - deleted (tinyint, required, default 0, comment: '0 == not deleted, 1 == deleted')
+    - PRIMARY KEY (`id`)
+    - INDEX (`user_id`)
+- show me to create statement for the new table
+- create the model schema for the new table
+- update the database.ts file for the changes

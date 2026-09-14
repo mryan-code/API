@@ -244,6 +244,19 @@ const initModels = async function (): Promise<types.KeyValue> {
 			(globalThis as unknown as types.KeyValue).sequelize,
 		);
 
+		// Initialize picture puzzle images so saved puzzle payloads can be linked to the owning user.
+		models.initPicturePuzzleImage(
+			(globalThis as unknown as types.KeyValue).sequelize,
+		);
+		models.User.hasMany(models.PicturePuzzleImage, {
+			foreignKey: "user_id",
+			sourceKey: "id",
+		});
+		models.PicturePuzzleImage.belongsTo(models.User, {
+			foreignKey: "user_id",
+			targetKey: "id",
+		});
+
 		returnValue.value = { colour: data.successColour, status: true };
 	} catch (error: any) {
 		const errorResult: types.KeyValue | null = await functions.createError(

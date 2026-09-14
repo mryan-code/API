@@ -1,8 +1,11 @@
 import { Request, Response, Router, NextFunction } from "express";
 import * as actions from "../actions";
 import * as models from "../models";
+import multer from "multer";
+import os from "os";
 
 const routes = Router();
+const upload = multer({ dest: os.tmpdir() });
 
 // App
 routes.post("/start-app", async (req: Request, res: Response) => {
@@ -253,6 +256,21 @@ routes.get("/get-avatar-voice", async (req: Request, res: Response) => {
 });
 routes.get("/get-user-chat", async (req: Request, res: Response) => {
 	const Action = new actions.LLMAction(req, res, true);
+	await Action.Action();
+});
+
+// Portfolio
+routes.post(
+	"/upload-picture-puzzle-image",
+	upload.single("file"),
+	async (req: any, res: Response) => {
+		req.body.file = req.file;
+		const Action = new actions.PortfolioAction(req, res, true);
+		await Action.Action();
+	},
+);
+routes.get("/get-picture-puzzle-image", async (req: Request, res: Response) => {
+	const Action = new actions.PortfolioAction(req, res, true);
 	await Action.Action();
 });
 

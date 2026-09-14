@@ -14,3 +14,4 @@ export * from "./UserConversationContent";
 export * from "./UserGuideline";
 export * from "./UserAvatar";
 export * from "./AvatarVoice";
+export * from "./PicturePuzzleImage";
