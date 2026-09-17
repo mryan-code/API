@@ -51,6 +51,11 @@ class PortfolioAction extends GenericAction {
 			picturePuzzleImages = (await functions.formatResults(
 				picturePuzzleImages,
 			)) as types.KeyValue[];
+			for (const picturePuzzleImage of picturePuzzleImages) {
+				//turn the blob into a base64 string
+				const base64String = picturePuzzleImage.blob.toString("base64");
+				picturePuzzleImage.blob = base64String;
+			}
 			this.success = true;
 			this.message.push("Picture puzzle images retrieved successfully");
 			this.results = picturePuzzleImages;
