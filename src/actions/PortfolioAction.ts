@@ -59,10 +59,11 @@ class PortfolioAction extends GenericAction {
 			// 	);
 			// }
 			const base64Data = imageBuffer.toString("base64");
+			this.sqlObject = {};
 			this.sqlObject.blob = base64Data;
 			this.sqlObject.mime_type = this.parameters.file.mimetype;
 			this.sqlObject.user_id = this.parameters.user_id;
-			this.sqlObject = {};
+
 			console.log("sqlObject", this.sqlObject);
 
 			const masterValidation = await validation.validateAll(
