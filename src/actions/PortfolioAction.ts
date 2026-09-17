@@ -37,11 +37,23 @@ class PortfolioAction extends GenericAction {
 	};
 
 	getPicturePuzzleImage = async (): Promise<any> => {
-		const picturePuzzleImage = await models.PicturePuzzleImage.findAll({
-			where: {
-				deleted: 0,
-			},
-		});
+		let picturePuzzleImages: types.KeyValue[] =
+			await models.PicturePuzzleImage.findAll({
+				where: {
+					deleted: 0,
+				},
+			});
+		if (picturePuzzleImages.length > 0) {
+			picturePuzzleImages = (await functions.formatResults(
+				picturePuzzleImages,
+			)) as types.KeyValue[];
+			this.success = true;
+			this.message.push("Picture puzzle images retrieved successfully");
+			this.results = picturePuzzleImages;
+		} else {
+			this.success = false;
+			this.message.push("Failed to retrieve picture puzzle images");
+		}
 	};
 
 	uploadPicturePuzzleImage = async (): Promise<any> => {
@@ -83,7 +95,7 @@ class PortfolioAction extends GenericAction {
 						this.parameters,
 					);
 					if (masterValidation) {
-						const insertSQL: any =
+						const insertSQL: types.KeyValue =
 							await models.PicturePuzzleImage.create(
 								this.sqlObject,
 								{
@@ -94,7 +106,7 @@ class PortfolioAction extends GenericAction {
 												.GLOBAL_DEBUG_LEVEL ==
 												"debug" ||
 											globalThis.globalVars.DEBUG_USER ==
-												"foobar"
+												"mryan"
 										) {
 											console.log(
 												"(Portfolio) uploadPicturePuzzleImage sql: " +
@@ -109,7 +121,7 @@ class PortfolioAction extends GenericAction {
 							this.message.push(
 								"Picture puzzle image uploaded successfully",
 							);
-							this.results.picture_puzzle_image = insertSQL;
+							this.results = [insertSQL];
 						} else {
 							this.success = false;
 							this.message.push(
