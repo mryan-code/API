@@ -4,6 +4,7 @@ import { DataTypes, Model, Sequelize } from "sequelize";
 export class PicturePuzzleImage extends Model {
 	declare id: number;
 	declare blob: Buffer;
+	declare mime_type: string;
 	declare user_id: number;
 	declare created: Date;
 	declare deleted: number;
@@ -20,6 +21,10 @@ export const initPicturePuzzleImage = (sequelize: Sequelize) => {
 			blob: {
 				// BLOB maps to Postgres BYTEA for the binary puzzle image payload.
 				type: DataTypes.BLOB,
+				allowNull: false,
+			},
+			mime_type: {
+				type: DataTypes.STRING,
 				allowNull: false,
 			},
 			user_id: {

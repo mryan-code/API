@@ -37,16 +37,17 @@ class PortfolioAction extends GenericAction {
 	getPicturePuzzleImage = async (): Promise<any> => {
 		const picturePuzzleImage = await models.PicturePuzzleImage.findAll({
 			where: {
-				user_id: this.parameters.user_id,
+				deleted: 0,
 			},
 		});
 	};
 
 	uploadPicturePuzzleImage = async (): Promise<any> => {
-		const picturePuzzleImage = await models.PicturePuzzleImage.create({
-			blob: this.parameters.blob,
-			user_id: this.parameters.user_id,
-		});
+		console.log("uploadPicturePuzzleImage", this.parameters);
+		// const picturePuzzleImage = await models.PicturePuzzleImage.create({
+		// 	blob: this.parameters.blob,
+		// 	user_id: this.parameters.user_id,
+		// });
 	};
 }
 export { PortfolioAction };
