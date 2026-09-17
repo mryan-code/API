@@ -45,62 +45,77 @@ class PortfolioAction extends GenericAction {
 	};
 
 	uploadPicturePuzzleImage = async (): Promise<any> => {
-		console.log("uploadPicturePuzzleImage- parameters", this.parameters);
-
 		try {
-			const imageBuffer = fs.readFileSync(this.parameters.file.path);
-			// if (
-			// 	globalThis.globalVars.GLOBAL_DEBUG_LEVEL == "debug" ||
-			// 	globalThis.globalVars.DEBUG_USER == "mryan"
-			// ) {
-			// 	console.log(
-			// 		"(Portfolio) uploadPicturePuzzleImage imageBuffer: " +
-			// 			imageBuffer.toString(),
-			// 	);
-			// }
-			const base64Data = imageBuffer.toString("base64");
-			this.sqlObject = {};
-			this.sqlObject.blob = base64Data;
-			this.sqlObject.mime_type = this.parameters.file.mimetype;
-			this.sqlObject.user_id = this.parameters.user_id;
-
-			console.log("sqlObject", this.sqlObject);
-
-			const masterValidation = await validation.validateAll(
-				this,
-				models.PicturePuzzleImage,
-				this.sqlObject,
-				this.parameters,
-			);
-			if (masterValidation) {
-				const insertSQL: any = await models.PicturePuzzleImage.create(
-					this.sqlObject,
-					{
-						logging: (sql: string) => {
-							this.queries.push(sql.toString());
-							if (
-								globalThis.globalVars.GLOBAL_DEBUG_LEVEL ==
-									"debug" ||
-								globalThis.globalVars.DEBUG_USER == "foobar"
-							) {
-								console.log(
-									"(Portfolio) uploadPicturePuzzleImage sql: " +
-										sql.toString(),
-								);
-							}
-						},
-					},
-				);
-				if (insertSQL) {
-					this.success = true;
-					this.message.push(
-						"Picture puzzle image uploaded successfully",
+			if (await functions.verifyJWT(this.parameters.user_jwt)) {
+				const decodedToken: types.KeyValue | undefined =
+					await functions.decodeJWT(this.parameters.user_jwt);
+				if (decodedToken?.user_id) {
+					const imageBuffer = fs.readFileSync(
+						this.parameters.file.path,
 					);
-					this.results.picture_puzzle_image = insertSQL;
+					// if (
+					// 	globalThis.globalVars.GLOBAL_DEBUG_LEVEL == "debug" ||
+					// 	globalThis.globalVars.DEBUG_USER == "mryan"
+					// ) {
+					// 	console.log(
+					// 		"(Portfolio) uploadPicturePuzzleImage imageBuffer: " +
+					// 			imageBuffer.toString(),
+					// 	);
+					// }
+					const base64Data = imageBuffer.toString("base64");
+					this.sqlObject = {};
+					this.sqlObject.blob = base64Data;
+					this.sqlObject.mime_type = this.parameters.file.mimetype;
+					this.sqlObject.user_id = decodedToken.user_id;
+
+					const masterValidation = await validation.validateAll(
+						this,
+						models.PicturePuzzleImage,
+						this.sqlObject,
+						this.parameters,
+					);
+					if (masterValidation) {
+						const insertSQL: any =
+							await models.PicturePuzzleImage.create(
+								this.sqlObject,
+								{
+									logging: (sql: string) => {
+										this.queries.push(sql.toString());
+										if (
+											globalThis.globalVars
+												.GLOBAL_DEBUG_LEVEL ==
+												"debug" ||
+											globalThis.globalVars.DEBUG_USER ==
+												"foobar"
+										) {
+											console.log(
+												"(Portfolio) uploadPicturePuzzleImage sql: " +
+													sql.toString(),
+											);
+										}
+									},
+								},
+							);
+						if (insertSQL) {
+							this.success = true;
+							this.message.push(
+								"Picture puzzle image uploaded successfully",
+							);
+							this.results.picture_puzzle_image = insertSQL;
+						} else {
+							this.success = false;
+							this.message.push(
+								"Failed to upload picture puzzle image",
+							);
+						}
+					}
 				} else {
 					this.success = false;
-					this.message.push("Failed to upload picture puzzle image");
+					this.message.push("Unauthorized");
 				}
+			} else {
+				this.success = false;
+				this.message.push("Unauthorized");
 			}
 		} catch (error) {
 			console.error("Error uploading picture puzzle image", error);
