@@ -18,7 +18,9 @@ function reqParameters(req: Request, res: Response, next: NextFunction): any {
 				if (Object.entries(req.headers).length > 0) {
 					for (let [key, value] of Object.entries(req.headers)) {
 						if (
-							(key == "user_jwt" || key == "authorization") &&
+							(key == "user_jwt" ||
+								key == "authorization" ||
+								key == "Authorization") &&
 							value
 						) {
 							if ((value as string).startsWith("Bearer ")) {
