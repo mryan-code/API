@@ -288,71 +288,73 @@ class LLMAction extends GenericAction {
 		this.results = [response];
 	};
 	chat = async () => {
-		if (await functions.verifyJWT(this.parameters.user_jwt)) {
-			const decodedToken: types.KeyValue | undefined =
-				await functions.decodeJWT(this.parameters.user_jwt);
-			const parameters: types.KeyValue = {};
-			if (decodedToken?.user_id && this.parameters.prompt) {
-				this.parameters.user_id = decodedToken.user_id;
-				parameters.user_id = this.parameters.user_id;
-				parameters.prompt = this.parameters.prompt;
-				parameters.power = JSON.parse(this.parameters.power || "false");
-				parameters.tts = JSON.parse(this.parameters.tts || "false");
-				parameters.enable_thinking = JSON.parse(
-					this.parameters.enable_thinking || "false",
-				);
-				const response = await functions.apiRequest(
-					this,
-					"POST",
-					"http://" +
-						process.env.LLM_HOST +
-						":" +
-						process.env.LLM_PORT,
-					"/chat",
-					parameters,
-					parseInt(process.env.LLM_TIMEOUT || "0"),
-				);
-				this.success = response?.status === "success" ? true : false;
-				if (response?.message) {
-					this.message.push(
-						...(Array.isArray(response.message)
-							? response.message
-							: [response.message]),
-					);
-				}
-				if (
-					response?.response ||
-					(response?.media?.mime_type && response?.media?.base64)
-				) {
-					this.success = true;
+		// if (await functions.verifyJWT(this.parameters.user_jwt)) {
+		// 	const decodedToken: types.KeyValue | undefined =
+		// 		await functions.decodeJWT(this.parameters.user_jwt);
+		// 	const parameters: types.KeyValue = {};
+		// 	if (decodedToken?.user_id && this.parameters.prompt) {
+		// 		this.parameters.user_id = decodedToken.user_id;
+		// 		parameters.user_id = this.parameters.user_id;
+		// 		parameters.prompt = this.parameters.prompt;
+		// 		parameters.power = JSON.parse(this.parameters.power || "false");
+		// 		parameters.tts = JSON.parse(this.parameters.tts || "false");
+		// 		parameters.enable_thinking = JSON.parse(
+		// 			this.parameters.enable_thinking || "false",
+		// 		);
+		// 		const response = await functions.apiRequest(
+		// 			this,
+		// 			"POST",
+		// 			"http://" +
+		// 				process.env.LLM_HOST +
+		// 				":" +
+		// 				process.env.LLM_PORT,
+		// 			"/chat",
+		// 			parameters,
+		// 			parseInt(process.env.LLM_TIMEOUT || "0"),
+		// 		);
+		// 		this.success = response?.status === "success" ? true : false;
+		// 		if (response?.message) {
+		// 			this.message.push(
+		// 				...(Array.isArray(response.message)
+		// 					? response.message
+		// 					: [response.message]),
+		// 			);
+		// 		}
+		// 		if (
+		// 			response?.response ||
+		// 			(response?.media?.mime_type && response?.media?.base64)
+		// 		) {
+		// 			this.success = true;
 
-					const promptID = await this.insertPrompt(
-						this.parameters.prompt,
-						response?.response || "",
-						response?.media?.mime_type || "",
-						response?.media?.base64 || "",
-					);
-					if (promptID) {
-						response.prompt_id = promptID;
-					}
-					this.results = [response];
-				}
-				if (response?.queries && Array.isArray(response.queries)) {
-					this.queries.push(...response.queries);
-				}
-				if (response?.parameters) {
-					this.parameters = {
-						...this.parameters,
-						...response.parameters,
-					};
-				}
-			} else {
-				this.success = false;
-				this.message.push(
-					"Invalid parameters: user_id and prompt are required.",
-				);
-			}
-		}
+		// 			const promptID = await this.insertPrompt(
+		// 				this.parameters.prompt,
+		// 				response?.response || "",
+		// 				response?.media?.mime_type || "",
+		// 				response?.media?.base64 || "",
+		// 			);
+		// 			if (promptID) {
+		// 				response.prompt_id = promptID;
+		// 			}
+		// 			this.results = [response];
+		// 		}
+		// 		if (response?.queries && Array.isArray(response.queries)) {
+		// 			this.queries.push(...response.queries);
+		// 		}
+		// 		if (response?.parameters) {
+		// 			this.parameters = {
+		// 				...this.parameters,
+		// 				...response.parameters,
+		// 			};
+		// 		}
+		// 	} else {
+		// 		this.success = false;
+		// 		this.message.push(
+		// 			"Invalid parameters: user_id and prompt are required.",
+		// 		);
+		// 	}
+		// }
+		this.success = false;
+		this.message.push("Not implemented");
 	};
 	systemModel = async () => {
 		if (await functions.verifyJWT(this.parameters.user_jwt)) {
