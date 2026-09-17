@@ -46,6 +46,15 @@ class PortfolioAction extends GenericAction {
 
 	uploadPicturePuzzleImage = async (): Promise<any> => {
 		try {
+			if (
+				globalThis.globalVars.GLOBAL_DEBUG_LEVEL == "debug" ||
+				globalThis.globalVars.DEBUG_USER == "mryan"
+			) {
+				console.log(
+					"(Portfolio) uploadPicturePuzzleImage parameters: ",
+					this.parameters,
+				);
+			}
 			if (await functions.verifyJWT(this.parameters.user_jwt)) {
 				const decodedToken: types.KeyValue | undefined =
 					await functions.decodeJWT(this.parameters.user_jwt);
@@ -58,7 +67,15 @@ class PortfolioAction extends GenericAction {
 					this.sqlObject.blob = base64Data;
 					this.sqlObject.mime_type = this.parameters.file.mimetype;
 					this.sqlObject.user_id = decodedToken.user_id;
-
+					if (
+						globalThis.globalVars.GLOBAL_DEBUG_LEVEL == "debug" ||
+						globalThis.globalVars.DEBUG_USER == "mryan"
+					) {
+						console.log(
+							"(Portfolio) uploadPicturePuzzleImage sqlObject: ",
+							this.sqlObject,
+						);
+					}
 					const masterValidation = await validation.validateAll(
 						this,
 						models.PicturePuzzleImage,
