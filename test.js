@@ -103,14 +103,14 @@ function verticalTraverse(matrix) {
 	return result;
 }
 
-const matrix = [
+const matrix1 = [
 	[1, 2, 3, 4],
 	[5, 6, 7, 8],
 	[9, 10, 11, 12],
 ];
 
-const result = columnTraverse(matrix);
-const result2 = verticalTraverse(matrix);
+const result = columnTraverse(matrix1);
+const result2 = verticalTraverse(matrix1);
 console.log(result.join(" "));
 console.log(result2.join(" "));
 var element = document.getElementsByClassName("test");
@@ -289,40 +289,40 @@ console.log([...unique]);
 // page (O(page_size)), not a rotated copy of the full list.
 function get(dblist, pivot_id, page_size, page_number) {
 	const n = dblist.length;
-	if ( page_size <= 0 || page_number < 0 || n === 0 ) {
+	if (page_size <= 0 || page_number < 0 || n === 0) {
 		return [];
 	}
 
 	let pivotIndex = -1;
-	for ( let i = 0 ; i < n ; i++ ) {
-		if ( dblist[i] === pivot_id ) {
+	for (let i = 0; i < n; i++) {
+		if (dblist[i] === pivot_id) {
 			pivotIndex = i;
 			break;
 		}
 	}
-	if ( pivotIndex === -1 ) {
+	if (pivotIndex === -1) {
 		return [];
 	}
 
 	const startOffset = page_number * page_size;
-	if ( startOffset >= n ) {
+	if (startOffset >= n) {
 		return [];
 	}
 
-	const count = Math.min(page_size , n - startOffset);
+	const count = Math.min(page_size, n - startOffset);
 	const page = [];
-	for ( let i = 0 ; i < count ; i++ ) {
+	for (let i = 0; i < count; i++) {
 		page.push(dblist[(pivotIndex + startOffset + i) % n]);
 	}
 	return page;
 }
 
 const dblist = [2, 23, 5, 42, 7, 9, 19];
-console.log(get(dblist , 5 , 2 , 0)); // [5, 42]
-console.log(get(dblist , 5 , 4 , 0)); // [5, 42, 7, 9]
-console.log(get(dblist , 5 , 2 , 1)); // [7, 9]
-console.log(get(dblist , 5 , 2 , 2)); // [19, 2]
-console.log(get(dblist , 5 , 3 , 2)); // [23] (remainder of the cycle)
-console.log(get(dblist , 5 , 2 , 3)); // [23]
-console.log(get(dblist , 5 , 2 , 6)); // []
-console.log(get(dblist , 5 , 2 , 1000)); // []
+console.log(get(dblist, 5, 2, 0)); // [5, 42]
+console.log(get(dblist, 5, 4, 0)); // [5, 42, 7, 9]
+console.log(get(dblist, 5, 2, 1)); // [7, 9]
+console.log(get(dblist, 5, 2, 2)); // [19, 2]
+console.log(get(dblist, 5, 3, 2)); // [23] (remainder of the cycle)
+console.log(get(dblist, 5, 2, 3)); // [23]
+console.log(get(dblist, 5, 2, 6)); // []
+console.log(get(dblist, 5, 2, 1000)); // []
