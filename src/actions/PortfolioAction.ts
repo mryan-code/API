@@ -39,6 +39,10 @@ class PortfolioAction extends GenericAction {
 	getPicturePuzzleImage = async (): Promise<any> => {
 		let picturePuzzleImages: types.KeyValue[] =
 			await models.PicturePuzzleImage.findAll({
+				attributes: {
+					include: [["id", "picture_puzzle_image_id"]],
+					exclude: ["id"],
+				},
 				where: {
 					deleted: 0,
 				},
