@@ -48,12 +48,12 @@ class PortfolioAction extends GenericAction {
 		// console.log("uploadPicturePuzzleImage", this.parameters);
 
 		try {
-			const imageBuffer = fs.readFileSync(this.parameters.path);
+			const imageBuffer = fs.readFileSync(this.parameters.file.path);
 			const blob = new Blob([imageBuffer], {
-				type: this.parameters.mimetype,
+				type: this.parameters.file.mimetype,
 			});
 			this.sqlObject.blob = blob;
-			this.sqlObject.mime_type = this.parameters.mimetype;
+			this.sqlObject.mime_type = this.parameters.file.mimetype;
 			this.sqlObject.user_id = this.parameters.user_id;
 			this.sqlObject = {};
 			console.log("sqlObject", this.sqlObject);
