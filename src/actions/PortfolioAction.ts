@@ -49,19 +49,17 @@ class PortfolioAction extends GenericAction {
 
 		try {
 			const imageBuffer = fs.readFileSync(this.parameters.file.path);
-			if (
-				globalThis.globalVars.GLOBAL_DEBUG_LEVEL == "debug" ||
-				globalThis.globalVars.DEBUG_USER == "mryan"
-			) {
-				console.log(
-					"(Portfolio) uploadPicturePuzzleImage imageBuffer: " +
-						imageBuffer.toString(),
-				);
-			}
-			const blob = new Blob([imageBuffer], {
-				type: this.parameters.file.mimetype,
-			});
-			this.sqlObject.blob = blob;
+			// if (
+			// 	globalThis.globalVars.GLOBAL_DEBUG_LEVEL == "debug" ||
+			// 	globalThis.globalVars.DEBUG_USER == "mryan"
+			// ) {
+			// 	console.log(
+			// 		"(Portfolio) uploadPicturePuzzleImage imageBuffer: " +
+			// 			imageBuffer.toString(),
+			// 	);
+			// }
+			const base64Data = imageBuffer.toString("base64");
+			this.sqlObject.blob = base64Data;
 			this.sqlObject.mime_type = this.parameters.file.mimetype;
 			this.sqlObject.user_id = this.parameters.user_id;
 			this.sqlObject = {};
