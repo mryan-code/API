@@ -52,9 +52,33 @@ class PortfolioAction extends GenericAction {
 				picturePuzzleImages,
 			)) as types.KeyValue[];
 			for (const picturePuzzleImage of picturePuzzleImages) {
-				//turn the blob into a base64 string
-				const base64String = picturePuzzleImage.blob.toString("base64");
-				picturePuzzleImage.blob = base64String;
+				// Existing rows stored ASCII base64 in BYTEA; toString("base64") double-encoded those and broke <img> load.
+				// const base64String = picturePuzzleImage.blob.toString("base64");
+				// picturePuzzleImage.blob = base64String;
+				const blobValue = picturePuzzleImage.blob;
+				if (Buffer.isBuffer(blobValue)) {
+					const isPng =
+						blobValue.length >= 8 &&
+						blobValue[0] === 0x89 &&
+						blobValue[1] === 0x50 &&
+						blobValue[2] === 0x4e &&
+						blobValue[3] === 0x47;
+					const isJpeg =
+						blobValue.length >= 3 &&
+						blobValue[0] === 0xff &&
+						blobValue[1] === 0xd8 &&
+						blobValue[2] === 0xff;
+					if (isPng || isJpeg) {
+						picturePuzzleImage.blob = blobValue.toString("base64");
+					} else {
+						const asText = blobValue.toString("utf8").replace(/\s/g, "");
+						if (/^[A-Za-z0-9+/]+=*$/.test(asText)) {
+							picturePuzzleImage.blob = asText;
+						} else {
+							picturePuzzleImage.blob = blobValue.toString("base64");
+						}
+					}
+				}
 			}
 			this.success = true;
 			this.message.push("Picture puzzle images retrieved successfully");
@@ -83,9 +107,8 @@ class PortfolioAction extends GenericAction {
 					const imageBuffer = fs.readFileSync(
 						this.parameters.file.path,
 					);
-					const base64Data = imageBuffer.toString("base64");
 					this.sqlObject = {};
-					this.sqlObject.blob = base64Data;
+					this.sqlObject.blob = imageBuffer;
 					this.sqlObject.mime_type = this.parameters.file.mimetype;
 					this.sqlObject.user_id = decodedToken.user_id;
 					if (
