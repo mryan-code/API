@@ -160,6 +160,9 @@ class LLMAction extends GenericAction {
 			case "system-model":
 				await this.systemModel();
 				break;
+			case "generate-image":
+				await this.generateImage();
+				break;
 			case "custom-model":
 				await this.customModel();
 				break;
@@ -392,6 +395,56 @@ class LLMAction extends GenericAction {
 						response?.media?.mime_type || "",
 						response?.media?.base64 || "",
 					);
+				}
+				if (response?.message) {
+					this.message.push(
+						...(Array.isArray(response.message)
+							? response.message
+							: [response.message]),
+					);
+				}
+				if (response?.parameters) {
+					this.parameters = {
+						...this.parameters,
+						...response.parameters,
+					};
+				}
+				if (response?.queries && Array.isArray(response.queries)) {
+					this.queries.push(...response.queries);
+				}
+			} else {
+				this.success = false;
+				this.message.push(
+					"Invalid parameters: user_id and prompt are required.",
+				);
+			}
+		}
+	};
+	generateImage = async () => {
+		if (await functions.verifyJWT(this.parameters.user_jwt)) {
+			const decodedToken: types.KeyValue | undefined =
+				await functions.decodeJWT(this.parameters.user_jwt);
+			const parameters: types.KeyValue = {};
+			if (decodedToken?.user_id && this.parameters.prompt) {
+				parameters.prompt = this.parameters.prompt;
+				const response = await functions.apiRequest(
+					this,
+					"POST",
+					"http://" +
+						process.env.LLM_HOST +
+						":" +
+						process.env.LLM_PORT,
+					"/generate-image",
+					parameters,
+					parseInt(process.env.LLM_TIMEOUT || "0"),
+				);
+				this.success = response?.status === "success" ? true : false;
+				if (
+					response?.response ||
+					(response?.media?.mime_type && response?.media?.base64)
+				) {
+					this.success = true;
+					this.results = [response];
 				}
 				if (response?.message) {
 					this.message.push(

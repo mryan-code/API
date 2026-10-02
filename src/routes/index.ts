@@ -110,6 +110,10 @@ routes.post("/system-model", async (req: Request, res: Response) => {
 	const Action = new actions.LLMAction(req, res, false);
 	await Action.Action();
 });
+routes.post("/generate-image", async (req: Request, res: Response) => {
+	const Action = new actions.LLMAction(req, res, true);
+	await Action.Action();
+});
 routes.put("/add-global-rule", async (req: Request, res: Response) => {
 	const Action = new actions.LLMAction(req, res, true);
 	await Action.Action();
