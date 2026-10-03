@@ -25,6 +25,8 @@ import moment from "moment-timezone";
 import { getChalk } from "./functions/getChalk";
 import util from "util";
 import { loadEnv } from "./functions/loadEnv";
+import { attachRealtimeBridge } from "./functions/realtimeBridge";
+import { routeWebsocketUpgrade } from "./functions/websocketUpgrade";
 const chalk = getChalk();
 
 loadEnv();
@@ -35,8 +37,25 @@ const moduleTitle: string = "Websockets";
 const setup = async function (server: Server): Promise<types.KeyValue> {
 	const returnValue: types.KeyValue = { value: {} };
 	try {
-		const wss = new WebSocketServer({ server });
+		// Split upgrades by path so camera and microphone bytes do not share the notification socket.
+		const wss = new WebSocketServer({ noServer: true });
+		const realtimeServer = new WebSocketServer({ noServer: true });
 		const wss_clients: types.KeyValue = {};
+
+		server.on("upgrade", (request, socket, head) => {
+			routeWebsocketUpgrade(
+				request,
+				socket,
+				head,
+				wss,
+				realtimeServer,
+			);
+		});
+
+		// High-risk: each realtime connection bridges live camera and microphone bytes to the LLM.
+		realtimeServer.on("connection", (socket) => {
+			void attachRealtimeBridge(socket);
+		});
 
 		const clearTimeouts = async function (user_id: string): Promise<void> {
 			if (wss_clients[user_id]) {

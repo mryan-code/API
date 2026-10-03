@@ -163,6 +163,21 @@
 				]
 			}
 		},
+		"/realtime": {
+			"get": {
+				"summary": "Realtime camera and microphone evaluation",
+				"description": "WebSocket upgrade at /realtime. The first text message is JSON {\"type\":\"start\",\"user_jwt\":\"...\"}. After the token is verified, binary messages are forwarded to the LLM: 0x01 plus a JPEG frame, or 0x02 plus 16 kHz mono PCM. The server sends JSON events session_started, evaluation (scene, people, emotion, heard), transcript, reply (response and optional tts), and error. JSON {\"type\":\"stop\"} closes the session. Raw frames and audio are not stored.",
+				"tags": ["LLM"],
+				"responses": {
+					"101": {
+						"description": "Switching Protocols"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					}
+				}
+			}
+		},
 		"/health": {
 			"get": {
 				"summary": "LLM health check",
