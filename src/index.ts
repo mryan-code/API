@@ -148,6 +148,7 @@ const startServer = async () => {
 						true /* enable colors */,
 					),
 				);
+				console.log(await functions.encrypt("MuseCereal510WEB!"));
 			});
 		}
 	}
