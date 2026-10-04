@@ -31,7 +31,7 @@ class AuthAction extends GenericAction {
 							email: { [Op.eq]: this.parameters.email },
 							deleted: { [Op.eq]: 0 },
 							password: {
-								[Op.eq]: await functions.encryptHash(
+								[Op.eq]: await functions.encrypt(
 									this.parameters.password,
 								),
 							},
