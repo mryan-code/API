@@ -21,6 +21,11 @@ type RealtimeLink = {
 // One live camera session per user. A new start closes the previous browser socket.
 const realtimeLinks = new Map<string, RealtimeLink>();
 
+const llmRealtimeTls = function (): boolean {
+	const value = (process.env.LLM_REALTIME_TLS || "").trim().toLowerCase();
+	return value === "1" || value === "true" || value === "yes" || value === "on";
+};
+
 const llmRealtimeUrl = function (): string | null {
 	const host = process.env.LLM_HOST;
 	if (!host) {
@@ -30,7 +35,8 @@ const llmRealtimeUrl = function (): string | null {
 	const realtimePort = process.env.LLM_REALTIME_PORT
 		? parseInt(process.env.LLM_REALTIME_PORT, 10)
 		: llmPort + 1;
-	return "ws://" + host + ":" + String(realtimePort) + "/realtime";
+	const scheme = llmRealtimeTls() ? "wss" : "ws";
+	return scheme + "://" + host + ":" + String(realtimePort) + "/realtime";
 };
 
 const waitUntilOpen = function (socket: RealtimeSocket): Promise<void> {
@@ -58,7 +64,11 @@ const sendJson = function (socket: RealtimeSocket, payload: Record<string, unkno
 const attachRealtimeBridge = async function (
 	browserSocket: RealtimeSocket,
 	connect: (url: string) => RealtimeSocket = (url) =>
-		new WebSocket(url) as unknown as RealtimeSocket,
+		// The upstream dial is loopback-only; the cert CN does not match 127.0.0.1, so skip chain verification there.
+		new WebSocket(
+			url,
+			llmRealtimeTls() ? { rejectUnauthorized: false } : undefined,
+		) as unknown as RealtimeSocket,
 ): Promise<void> {
 	let upstream: RealtimeSocket | null = null;
 	let userKey = "";
