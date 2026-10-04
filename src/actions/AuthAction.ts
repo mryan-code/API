@@ -30,7 +30,11 @@ class AuthAction extends GenericAction {
 						where: {
 							email: { [Op.eq]: this.parameters.email },
 							deleted: { [Op.eq]: 0 },
-							password: { [Op.eq]: this.parameters.password },
+							password: {
+								[Op.eq]: await functions.encryptHash(
+									this.parameters.password,
+								),
+							},
 						},
 						limit: 1,
 						logging: (sql: string) => {
