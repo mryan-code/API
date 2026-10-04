@@ -23,73 +23,10 @@ class AuthAction extends GenericAction {
 		const authenticated: types.KeyValue = { value: false };
 		if (Object.hasOwn(this.parameters, "email")) {
 			if (validation.isEmail(this.parameters.email)) {
-				// const emailQuery: types.KeyValue | null =
-				// 	await models.User.findOne({
-				// 		subQuery: false,
-				// 		raw: true,
-				// 		where: {
-				// 			email: { [Op.eq]: this.parameters.email },
-				// 			deleted: { [Op.eq]: 0 },
-				// 			password: { [Op.eq]: this.parameters.password },
-				// 		},
-				// 		limit: 1,
-				// 		logging: (sql: string) => {
-				// 			this.queries.push(sql.toString());
-				// 		},
-				// 	});
-
-				// if (emailQuery) {
-				// 	const authCode = this.generateAuthCode();
-				// 	const auth_code_expiry: number = parseInt(
-				// 		process.env.AUTH_CODE_EXPIRY_MINUTES || "15",
-				// 	);
-				// 	const updateObject = {} as types.KeyValue;
-				// 	updateObject.auth_code = authCode;
-				// 	updateObject.auth_code_expires = moment
-				// 		.utc()
-				// 		.add(auth_code_expiry, "minutes")
-				// 		.format();
-				// 	updateObject.login_token = null;
-				// 	const upDate = await models.User.update(updateObject, {
-				// 		where: {
-				// 			id: { [Op.eq]: emailQuery.id },
-				// 		},
-				// 		logging: (sql: string) => {
-				// 			this.queries.push(sql.toString());
-				// 		},
-				// 	});
-				// 	const approvedUsers = ["2"]; // Replace with actual approved user IDs
-				// 	if (approvedUsers.includes(emailQuery.id.toString())) {
-				// 		this.output.auth_code = authCode;
-				// 		this.message.push("Email sent.");
-				// 	} else {
-				// 		this.message.push(
-				// 			"Email not sent. User is not approved.",
-				// 		);
-				// 		console.log("AuthAction.AuthCode: ", authCode);
-				// 	}
-				// 	await functions.sendAuthCodeEmail(
-				// 		this.parameters.email,
-				// 		authCode,
-				// 		auth_code_expiry,
-				// 	);
-				// 	this.message.push("Email sent.");
-				// 	this.success = true;
-				// } else {
-				// 	this.message.push("Email not found.");
-				// 	this.success = false;
-				// }
-
 				let verifyQuery: types.KeyValue | null =
 					await models.User.findOne({
 						subQuery: false,
-						attributes: [
-							"id",
-							"auth_code",
-							"login_token",
-							"auth_code_expires",
-							"email",
-						],
+						attributes: ["id", "login_token", "email"],
 						where: {
 							email: { [Op.eq]: this.parameters.email },
 							deleted: { [Op.eq]: 0 },
@@ -114,79 +51,52 @@ class AuthAction extends GenericAction {
 					verifyQuery = (await functions.formatResults(
 						verifyQuery,
 					)) as types.KeyValue;
-					const authCode = verifyQuery.auth_code;
-					const expiry = moment.utc(verifyQuery.auth_code_expires);
-					const emailCode = this.parameters.auth_code;
 					const now = moment.utc();
 					const updateObject = {} as types.KeyValue;
+					const newToken: string = uuidv6()
+						.toLocaleUpperCase()
+						.toString();
+					updateObject.auth_code = null;
+					updateObject.auth_code_expires = null;
+					updateObject.login_token = newToken;
+					const jwtToken = await functions.generateJWT({
+						user_id: verifyQuery.id.toString(),
+						login_token: await functions.encryptHash(
+							newToken.toString(),
+						),
+					});
 
-					if (expiry.isAfter(now)) {
-						if (authCode == emailCode) {
-							const newToken: string = uuidv6()
-								.toLocaleUpperCase()
-								.toString();
-							updateObject.auth_code = null;
-							updateObject.auth_code_expires = null;
-							updateObject.login_token = newToken;
-							const jwtToken = await functions.generateJWT({
-								user_id: verifyQuery.id.toString(),
-								login_token: await functions.encryptHash(
-									newToken.toString(),
-								),
-							});
+					this.output.token = JSON.stringify({
+						user_id: verifyQuery.id.toString(),
+						user_jwt: jwtToken,
+					});
 
-							this.output.token = JSON.stringify({
-								user_id: verifyQuery.id.toString(),
-								user_jwt: jwtToken,
-							});
-
-							this.sqlObject = {};
-							this.sqlObject.user_id = verifyQuery.id;
-							this.sqlObject.user_date =
-								this.parameters.user_date;
-							this.sqlObject.action = 1;
-							if (this.parameters.user_agent) {
-								this.sqlObject.user_agent =
-									this.parameters.user_agent;
-							}
-							if (this.parameters.ip_address) {
-								this.sqlObject.ip_address =
-									this.parameters.ip_address;
-							}
-							if (this.parameters.latitude) {
-								this.sqlObject.latitude =
-									this.parameters.latitude;
-							}
-							if (this.parameters.longitude) {
-								this.sqlObject.longitude =
-									this.parameters.longitude;
-							}
-							await models.Login.create(this.sqlObject, {
-								logging: (sql: string) => {
-									this.queries.push(sql.toString());
-								},
-							});
-
-							this.message.push("Authenticated.");
-							this.success = true;
-
-							authenticated.value = true;
-						} else {
-							this.message.push("Incorrect code.");
-							this.success = false;
-
-							authenticated.value = false;
-							this.status = 400;
-						}
-					} else {
-						updateObject.auth_code = null;
-						updateObject.auth_code_expires = null;
-						updateObject.login_token = null;
-						this.message.push("Code expired.");
-						this.success = false;
-						this.status = 400;
-						authenticated.value = false;
+					this.sqlObject = {};
+					this.sqlObject.user_id = verifyQuery.id;
+					this.sqlObject.user_date = this.parameters.user_date;
+					this.sqlObject.action = 1;
+					if (this.parameters.user_agent) {
+						this.sqlObject.user_agent = this.parameters.user_agent;
 					}
+					if (this.parameters.ip_address) {
+						this.sqlObject.ip_address = this.parameters.ip_address;
+					}
+					if (this.parameters.latitude) {
+						this.sqlObject.latitude = this.parameters.latitude;
+					}
+					if (this.parameters.longitude) {
+						this.sqlObject.longitude = this.parameters.longitude;
+					}
+					await models.Login.create(this.sqlObject, {
+						logging: (sql: string) => {
+							this.queries.push(sql.toString());
+						},
+					});
+
+					this.message.push("Authenticated.");
+					this.success = true;
+
+					authenticated.value = true;
 
 					if (Object.keys(updateObject).length > 0) {
 						await models.User.update(updateObject, {
