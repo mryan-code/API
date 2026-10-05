@@ -274,7 +274,7 @@ routes.post(
 	},
 );
 routes.get("/get-picture-puzzle-image", async (req: Request, res: Response) => {
-	const Action = new actions.PortfolioAction(req, res, true);
+	const Action = new actions.PortfolioAction(req, res, false);
 	await Action.Action();
 });
 
