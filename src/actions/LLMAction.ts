@@ -16,8 +16,27 @@ import { readFileSync } from "node:fs";
 import { unlink } from "node:fs/promises";
 import { fileURLToPath } from "url";
 import path from "path";
-import { getLlama, LlamaChatSession } from "node-llama-cpp";
 import { KokoroTTS } from "kokoro-js";
+
+// node-llama-cpp is ESM-only and its module graph uses top-level await, so a
+// static import here (compiled to require()) crashes Node at startup with
+// ERR_REQUIRE_ASYNC_MODULE. Load it lazily through a genuine dynamic import
+// instead. TypeScript downlevels a written import() to require() in CommonJS
+// output, so the import is built with the Function constructor to keep it
+// dynamic at runtime.
+const dynamicImport = new Function(
+	"specifier",
+	"return import(specifier)",
+) as (specifier: string) => Promise<typeof import("node-llama-cpp")>;
+
+let llamaCppModule: typeof import("node-llama-cpp") | null = null;
+
+const loadLlamaCpp = async (): Promise<typeof import("node-llama-cpp")> => {
+	if (!llamaCppModule) {
+		llamaCppModule = await dynamicImport("node-llama-cpp");
+	}
+	return llamaCppModule;
+};
 
 // // dayjs
 // import dayjs from "dayjs";
@@ -400,6 +419,7 @@ class LLMAction extends GenericAction {
 				// 	};
 				// }
 				// Initialize the llama engine
+				const { getLlama, LlamaChatSession } = await loadLlamaCpp();
 				const llama = await getLlama();
 
 				// Load your local GGUF model
