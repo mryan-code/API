@@ -6,7 +6,8 @@
 		"rootDir": "./src",
 		"esModuleInterop": true,
 		"resolveJsonModule": true,
-		"skipLibCheck": true
+		"skipLibCheck": true,
+		"paths": { "kokoro-js": ["./node_modules/kokoro-js/types/kokoro.d.ts"] }
 	},
 	"include": [
 		"src/**/*",
