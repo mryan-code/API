@@ -8,7 +8,7 @@ on:
 
 jobs:
   deploy:
-    runs-on: 'ubuntu-latest'
+    runs-on: 'ubuntu-26.04'
     env:
       DEPLOY_HOST: 'dev-domain.duckdns.org'
       DEPLOY_PORT: '777'
