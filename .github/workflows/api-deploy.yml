@@ -19,7 +19,7 @@ jobs:
     steps:
       # Download the repository files onto the GitHub runner runner
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       # Connect to HOST via SSH
       - name: Connect to HOST via SSH
