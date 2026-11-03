@@ -148,7 +148,7 @@ const startServer = async () => {
 						true /* enable colors */,
 					),
 				);
-				console.log(await functions.encrypt("BunnyPass123WEB!"));
+				// console.log(await functions.encrypt("BunnyPass123WEB!"));
 			});
 		}
 	}

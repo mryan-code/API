@@ -11,7 +11,7 @@ jobs:
     runs-on: 'ubuntu-latest'
     env:
       DEPLOY_HOST: 'dev-domain.duckdns.org'
-      DEPLOY_PORT: '22'
+      DEPLOY_PORT: '777'
       DEPLOY_USERNAME: 'inkt'
       DEPLOY_PATH: '~/Personal/API'
       SSH_KEEPALIVE_OPTIONS: "-o ServerAliveInterval=30 -o ServerAliveCountMax=4 -o TCPKeepAlive=yes"
@@ -403,11 +403,13 @@ jobs:
             --exclude='temp' \
             --exclude='.env' \
             --exclude='.env.*' \
+            --exclude='models/' \
             --exclude='certificates/' \
             --filter='P .env' \
             --filter='P .env.*' \
             --filter='P node_modules/' \
             --filter='P certificates/' \
+            --filter='P models/' \
             --rsync-path="$remote_rsync_path" \
             -e "ssh $SSH_KEEPALIVE_OPTIONS -p $DEPLOY_PORT -o ControlMaster=auto -o ControlPath=$control_path -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o BatchMode=yes -o PasswordAuthentication=no" \
             ./ \

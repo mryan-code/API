@@ -25,3 +25,4 @@ tts/model.onnx
 temp
 certificates/*
 .freebuff
+models/*

@@ -14,6 +14,10 @@ import { loadEnv } from "../functions/loadEnv";
 import { snapshotDownload, listModels } from "@huggingface/hub";
 import { readFileSync } from "node:fs";
 import { unlink } from "node:fs/promises";
+import { fileURLToPath } from "url";
+import path from "path";
+import { getLlama, LlamaChatSession } from "node-llama-cpp";
+import { KokoroTTS } from "kokoro-js";
 
 // // dayjs
 // import dayjs from "dayjs";
@@ -147,6 +151,52 @@ class LLMAction extends GenericAction {
 	// am_puck	🚹	B	H hours	C+
 	// am_santa	🚹	C	M minutes 🤏	D-
 
+	tts = async (
+		text: string,
+		voiceOption:
+			| "af_heart"
+			| "af_alloy"
+			| "af_aoede"
+			| "af_bella"
+			| "af_jessica"
+			| "af_kore"
+			| "af_nicole"
+			| "af_nova"
+			| "af_river"
+			| "af_sarah"
+			| "af_sky"
+			| "am_adam"
+			| "am_echo"
+			| "am_eric"
+			| "am_fenrir"
+			| "am_liam"
+			| "am_michael"
+			| "am_onyx"
+			| "am_puck"
+			| "am_santa" = "af_heart",
+	) => {
+		if (!process.env.TTS_MODEL) {
+			this.success = false;
+			this.message.push("TTS model not found");
+			return;
+		}
+		const tts = await KokoroTTS.from_pretrained(process.env.TTS_MODEL, {
+			dtype: "q8", // Options: "fp32", "fp16", "q8", "q4", "q4f16"
+			device: "wasm", // Options: "wasm", "webgpu" (web) or "cpu" (node). If using "webgpu", we recommend using dtype="fp32".
+		});
+
+		const audio = await tts.generate(text, {
+			// Use `tts.list_voices()` to list all available voices
+			voice: voiceOption,
+		});
+		// return base64 and mime_type
+		const base64 = Buffer.from(audio.audio).toString("base64");
+		const mime_type = "audio/wav";
+		return {
+			base64: base64,
+			mime_type: mime_type,
+		};
+	};
 	task = async (): Promise<any> => {
 		const pathTask: string = this.req.path.toString().replace("/", "");
 
@@ -291,73 +341,93 @@ class LLMAction extends GenericAction {
 		this.results = [response];
 	};
 	chat = async () => {
-		// if (await functions.verifyJWT(this.parameters.user_jwt)) {
-		// 	const decodedToken: types.KeyValue | undefined =
-		// 		await functions.decodeJWT(this.parameters.user_jwt);
-		// 	const parameters: types.KeyValue = {};
-		// 	if (decodedToken?.user_id && this.parameters.prompt) {
-		// 		this.parameters.user_id = decodedToken.user_id;
-		// 		parameters.user_id = this.parameters.user_id;
-		// 		parameters.prompt = this.parameters.prompt;
-		// 		parameters.power = JSON.parse(this.parameters.power || "false");
-		// 		parameters.tts = JSON.parse(this.parameters.tts || "false");
-		// 		parameters.enable_thinking = JSON.parse(
-		// 			this.parameters.enable_thinking || "false",
-		// 		);
-		// 		const response = await functions.apiRequest(
-		// 			this,
-		// 			"POST",
-		// 			"http://" +
-		// 				process.env.LLM_HOST +
-		// 				":" +
-		// 				process.env.LLM_PORT,
-		// 			"/chat",
-		// 			parameters,
-		// 			parseInt(process.env.LLM_TIMEOUT || "0"),
-		// 		);
-		// 		this.success = response?.status === "success" ? true : false;
-		// 		if (response?.message) {
-		// 			this.message.push(
-		// 				...(Array.isArray(response.message)
-		// 					? response.message
-		// 					: [response.message]),
-		// 			);
-		// 		}
-		// 		if (
-		// 			response?.response ||
-		// 			(response?.media?.mime_type && response?.media?.base64)
-		// 		) {
-		// 			this.success = true;
+		if (await functions.verifyJWT(this.parameters.user_jwt)) {
+			const decodedToken: types.KeyValue | undefined =
+				await functions.decodeJWT(this.parameters.user_jwt);
+			const parameters: types.KeyValue = {};
+			if (decodedToken?.user_id && this.parameters.prompt) {
+				this.parameters.user_id = decodedToken.user_id;
+				parameters.user_id = this.parameters.user_id;
+				parameters.prompt = this.parameters.prompt;
+				// parameters.power = JSON.parse(this.parameters.power || "false");
+				// parameters.tts = JSON.parse(this.parameters.tts || "false");
+				// parameters.enable_thinking = JSON.parse(
+				// 	this.parameters.enable_thinking || "false",
+				// );
+				// const response = await functions.apiRequest(
+				// 	this,
+				// 	"POST",
+				// 	"http://" +
+				// 		process.env.LLM_HOST +
+				// 		":" +
+				// 		process.env.LLM_PORT,
+				// 	"/chat",
+				// 	parameters,
+				// 	parseInt(process.env.LLM_TIMEOUT || "0"),
+				// );
+				// this.success = response?.status === "success" ? true : false;
+				// if (response?.message) {
+				// 	this.message.push(
+				// 		...(Array.isArray(response.message)
+				// 			? response.message
+				// 			: [response.message]),
+				// 	);
+				// }
+				// if (
+				// 	response?.response ||
+				// 	(response?.media?.mime_type && response?.media?.base64)
+				// ) {
+				// 	this.success = true;
 
-		// 			const promptID = await this.insertPrompt(
-		// 				this.parameters.prompt,
-		// 				response?.response || "",
-		// 				response?.media?.mime_type || "",
-		// 				response?.media?.base64 || "",
-		// 			);
-		// 			if (promptID) {
-		// 				response.prompt_id = promptID;
-		// 			}
-		// 			this.results = [response];
-		// 		}
-		// 		if (response?.queries && Array.isArray(response.queries)) {
-		// 			this.queries.push(...response.queries);
-		// 		}
-		// 		if (response?.parameters) {
-		// 			this.parameters = {
-		// 				...this.parameters,
-		// 				...response.parameters,
-		// 			};
-		// 		}
-		// 	} else {
-		// 		this.success = false;
-		// 		this.message.push(
-		// 			"Invalid parameters: user_id and prompt are required.",
-		// 		);
-		// 	}
-		// }
-		this.success = false;
-		this.message.push("Not implemented");
+				// 	const promptID = await this.insertPrompt(
+				// 		this.parameters.prompt,
+				// 		response?.response || "",
+				// 		response?.media?.mime_type || "",
+				// 		response?.media?.base64 || "",
+				// 	);
+				// 	if (promptID) {
+				// 		response.prompt_id = promptID;
+				// 	}
+				// 	this.results = [response];
+				// }
+				// if (response?.queries && Array.isArray(response.queries)) {
+				// 	this.queries.push(...response.queries);
+				// }
+				// if (response?.parameters) {
+				// 	this.parameters = {
+				// 		...this.parameters,
+				// 		...response.parameters,
+				// 	};
+				// }
+				// Initialize the llama engine
+				const llama = await getLlama();
+
+				// Load your local GGUF model
+				const model = await llama.loadModel({
+					modelPath: path.join(
+						process.env.MODEL_PATH || "",
+						process.env.BASE_MODEL || "",
+					),
+				});
+
+				// Create a context and a chat session
+				const context = await model.createContext();
+				const session = new LlamaChatSession({
+					contextSequence: context.getSequence(),
+				});
+
+				// Prompt the model
+				const response = await session.prompt(
+					"Explain quantum computing in one sentence.",
+				);
+				console.log("AI:", response);
+			} else {
+				this.success = false;
+				this.message.push(
+					"Invalid parameters: user_id and prompt are required.",
+				);
+			}
+		}
 	};
 	systemModel = async () => {
 		if (await functions.verifyJWT(this.parameters.user_jwt)) {
