@@ -290,20 +290,7 @@
 						"value": "Hello, how are you?"
 					},
 					{
-						"name": "instruction_type",
-						"required": true,
-						"description": "Type of prompt to send to the LLM service.",
-						"in": "query",
-						"type": "string",
-						"value": "text"
-					},
-					{
-						"name": "proactive_allowed",
-						"required": false,
-						"description": "Allows the reasoning layer to respond to otherwise low-signal input.",
-						"in": "query",
-						"type": "string",
-						"value": "false"
+						"$ref": "#/components/parameters/user_jwt"
 					}
 				]
 			}
@@ -2094,6 +2081,14 @@
 				"value": "Test Name",
 				"required": true,
 				"description": "Attribute name.",
+				"in": "query",
+				"type": "string"
+			},
+			"user_jwt": {
+				"name": "user_jwt",
+				"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMSIsImxvZ2luX3Rva2VuIjoiMUYxQzcxQUQtMjREQS02NTZBLTg5NDQtQTRGQzE0MUJBNkI0IiwiaWF0IjoxNzkzODA0MTQxLCJleHAiOjE3OTYzOTYxNDF9.0h_7QPIIlpUNrVmlk0ZTYtWVtd9CJA9dRz3EBVYwCuQ",
+				"required": true,
+				"description": "User JWT.",
 				"in": "query",
 				"type": "string"
 			},

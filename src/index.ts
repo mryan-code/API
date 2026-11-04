@@ -55,7 +55,7 @@ const startServer = async () => {
 	if (dbLoaded) {
 		if (
 			globalThis.globalVars.USER_ID &&
-			globalThis.globalVars.DEBUG_USER === "foobar"
+			globalThis.globalVars.DEBUG_USER === "mryan"
 		) {
 			let userQuery: types.KeyValue | null = await models.User.findOne({
 				attributes: [["id", "user_id"], "login_token"],

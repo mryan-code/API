@@ -94,20 +94,12 @@ routes.get("/get-requestlog", async (req: Request, res: Response) => {
 });
 
 // LLM
-routes.get("/health", async (req: Request, res: Response) => {
+routes.get("/load", async (req: Request, res: Response) => {
 	const Action = new actions.LLMAction(req, res, true);
 	await Action.Action();
 });
 routes.post("/chat", async (req: Request, res: Response) => {
 	const Action = new actions.LLMAction(req, res, true);
-	await Action.Action();
-});
-routes.post("/custom-model", async (req: Request, res: Response) => {
-	const Action = new actions.LLMAction(req, res, true);
-	await Action.Action();
-});
-routes.post("/system-model", async (req: Request, res: Response) => {
-	const Action = new actions.LLMAction(req, res, false);
 	await Action.Action();
 });
 routes.post("/generate-image", async (req: Request, res: Response) => {
@@ -127,22 +119,6 @@ routes.get("/get-global-rule", async (req: Request, res: Response) => {
 	await Action.Action();
 });
 routes.delete("/delete-global-rule", async (req: Request, res: Response) => {
-	const Action = new actions.LLMAction(req, res, true);
-	await Action.Action();
-});
-routes.put("/add-model-type", async (req: Request, res: Response) => {
-	const Action = new actions.LLMAction(req, res, true);
-	await Action.Action();
-});
-routes.post("/save-model-type", async (req: Request, res: Response) => {
-	const Action = new actions.LLMAction(req, res, true);
-	await Action.Action();
-});
-routes.get("/get-model-type", async (req: Request, res: Response) => {
-	const Action = new actions.LLMAction(req, res, true);
-	await Action.Action();
-});
-routes.delete("/delete-model-type", async (req: Request, res: Response) => {
 	const Action = new actions.LLMAction(req, res, true);
 	await Action.Action();
 });

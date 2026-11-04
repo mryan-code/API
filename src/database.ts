@@ -151,11 +151,6 @@ const initModels = async function (): Promise<types.KeyValue> {
 			(globalThis as unknown as types.KeyValue).sequelize,
 		);
 
-		// Initialize model types so LLMAction model-type CRUD endpoints have a persisted source of truth.
-		models.initModelType(
-			(globalThis as unknown as types.KeyValue).sequelize,
-		);
-
 		// Initialize prompt persistence so each saved prompt can be linked back to its owner.
 		models.initPrompt((globalThis as unknown as types.KeyValue).sequelize);
 		models.User.hasMany(models.Prompt, {

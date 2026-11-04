@@ -6,7 +6,6 @@ export * from "./UserRole";
 export * from "./ErrorLog";
 export * from "./CustomModel";
 export * from "./GlobalRule";
-export * from "./ModelType";
 export * from "./Prompt";
 export * from "./UserP2";
 export * from "./UserConversationSubject";

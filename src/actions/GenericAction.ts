@@ -522,24 +522,24 @@ class GenericAction {
 	public Action = async () => {
 		let shouldSendResponse = true;
 		try {
-			if (this.permissionRequired === true) {
-				const authorized = await middleware.testAuthorizationHeader(
-					this.req,
-					this.res,
-				);
-				if (this.res.headersSent || this.res.writableEnded) {
-					shouldSendResponse = false;
-					return;
-				}
-				if (authorized.value === false) {
-					shouldSendResponse = false;
-					return this.res
-						.setHeader("Content-Type", "json")
-						.status(authorized.code)
-						.json({ message: authorized.message })
-						.end();
-				}
-			}
+			// if (this.permissionRequired === true) {
+			// 	const authorized = await middleware.testAuthorizationHeader(
+			// 		this.req,
+			// 		this.res,
+			// 	);
+			// 	if (this.res.headersSent || this.res.writableEnded) {
+			// 		shouldSendResponse = false;
+			// 		return;
+			// 	}
+			// 	if (authorized.value === false) {
+			// 		shouldSendResponse = false;
+			// 		return this.res
+			// 			.setHeader("Content-Type", "json")
+			// 			.status(authorized.code)
+			// 			.json({ message: authorized.message })
+			// 			.end();
+			// 	}
+			// }
 			this.status = 200;
 			await this.task();
 		} catch (error: any) {

@@ -207,20 +207,14 @@ class LLMAction extends GenericAction {
 		const pathTask: string = this.req.path.toString().replace("/", "");
 
 		switch (pathTask) {
-			case "health":
-				await this.health();
+			case "load":
+				await this.load();
 				break;
 			case "chat":
 				await this.chat();
 				break;
-			case "system-model":
-				await this.systemModel();
-				break;
 			case "generate-image":
 				await this.generateImage();
-				break;
-			case "custom-model":
-				await this.customModel();
 				break;
 			case "download-model":
 				await this.downloadModel();
@@ -239,18 +233,6 @@ class LLMAction extends GenericAction {
 				break;
 			case "delete-global-rule":
 				await this.deleteGlobalRule();
-				break;
-			case "add-model-type":
-				await this.addModelType();
-				break;
-			case "save-model-type":
-				await this.saveModelType();
-				break;
-			case "get-model-type":
-				await this.getModelType();
-				break;
-			case "delete-model-type":
-				await this.deleteModelType();
 				break;
 			case "add-user-p2":
 				await this.addUserP2();
@@ -327,31 +309,16 @@ class LLMAction extends GenericAction {
 		}
 	};
 
-	health = async () => {
-		const response = await functions.apiRequest(
-			this,
-			"GET",
-			"http://" + process.env.LLM_HOST + ":" + process.env.LLM_PORT,
-			"/health",
-			{},
-			parseInt(process.env.LLM_TIMEOUT || "0"),
-		);
-		this.success = response?.status === "ok" ? true : false;
-		if (response?.message) {
-			this.message.push(
-				...(Array.isArray(response.message)
-					? response.message
-					: [response.message]),
-			);
-		}
-		this.results = [response];
-	};
+	load = async () => {};
 	chat = async () => {
+		console.log("chat", this.parameters);
 		if (await functions.verifyJWT(this.parameters.user_jwt)) {
 			const decodedToken: types.KeyValue | undefined =
 				await functions.decodeJWT(this.parameters.user_jwt);
 			const parameters: types.KeyValue = {};
 			if (decodedToken?.user_id && this.parameters.prompt) {
+				const returnObject: types.KeyValue = {};
+				returnObject.prompt = this.parameters.prompt;
 				this.parameters.user_id = decodedToken.user_id;
 				parameters.user_id = this.parameters.user_id;
 				parameters.prompt = this.parameters.prompt;
@@ -405,6 +372,39 @@ class LLMAction extends GenericAction {
 				// 		...response.parameters,
 				// 	};
 				// }
+
+				// get all rules
+				this.sequelizeOptions = {
+					subQuery: false,
+					attributes: {
+						include: [
+							[
+								"id",
+								(await functions.renameDialerObject(
+									models.GlobalRule.name.trim(),
+									false,
+								)) + "_id",
+							],
+						],
+						exclude: ["id"],
+					},
+					where: {
+						deleted: 0,
+					},
+					order: this.parameters.order,
+					logging: (sql: string) => {
+						this.queries.push(sql.toString());
+						if (globalThis.globalVars.DEBUG_USER === "mryan") {
+							console.log("sql", sql.toString());
+						}
+					},
+				};
+				const rules = await models.GlobalRule.findAll(
+					this.sequelizeOptions,
+				);
+				console.log("rules", rules);
+				returnObject.rules = rules;
+
 				// Initialize the llama engine
 				const { getLlama, LlamaChatSession } = await loadLlamaCpp();
 				const llama = await getLlama();
@@ -424,71 +424,12 @@ class LLMAction extends GenericAction {
 				});
 
 				// Prompt the model
-				const response = await session.prompt(
-					"Explain quantum computing in one sentence.",
-				);
+				const response = await session.prompt(this.parameters.prompt);
+
+				returnObject.answer = response;
 				console.log("AI:", response);
-			} else {
-				this.success = false;
-				this.message.push(
-					"Invalid parameters: user_id and prompt are required.",
-				);
-			}
-		}
-	};
-	systemModel = async () => {
-		if (await functions.verifyJWT(this.parameters.user_jwt)) {
-			const decodedToken: types.KeyValue | undefined =
-				await functions.decodeJWT(this.parameters.user_jwt);
-			const parameters: types.KeyValue = {};
-			if (decodedToken?.user_id && this.parameters.prompt) {
-				this.parameters.user_id = decodedToken.user_id;
-				parameters.user_id = this.parameters.user_id;
-				parameters.prompt = this.parameters.prompt;
-				parameters.type = "system";
-				parameters.tts = JSON.parse(this.parameters.tts || "false");
-				parameters.model = this.parameters.model;
-				const response = await functions.apiRequest(
-					this,
-					"POST",
-					"http://" +
-						process.env.LLM_HOST +
-						":" +
-						process.env.LLM_PORT,
-					"/use-model",
-					parameters,
-					parseInt(process.env.LLM_TIMEOUT || "0"),
-				);
-				this.success = response?.status === "success" ? true : false;
-				if (
-					response?.response ||
-					(response?.media?.mime_type && response?.media?.base64)
-				) {
-					this.success = true;
-					this.results = [response];
-					await this.insertPrompt(
-						this.parameters.prompt,
-						response?.response || "",
-						response?.media?.mime_type || "",
-						response?.media?.base64 || "",
-					);
-				}
-				if (response?.message) {
-					this.message.push(
-						...(Array.isArray(response.message)
-							? response.message
-							: [response.message]),
-					);
-				}
-				if (response?.parameters) {
-					this.parameters = {
-						...this.parameters,
-						...response.parameters,
-					};
-				}
-				if (response?.queries && Array.isArray(response.queries)) {
-					this.queries.push(...response.queries);
-				}
+				this.results = [returnObject];
+				this.success = true;
 			} else {
 				this.success = false;
 				this.message.push(
@@ -547,71 +488,6 @@ class LLMAction extends GenericAction {
 			}
 		}
 	};
-	customModel = async () => {
-		if (await functions.verifyJWT(this.parameters.user_jwt)) {
-			const decodedToken: types.KeyValue | undefined =
-				await functions.decodeJWT(this.parameters.user_jwt);
-			const parameters: types.KeyValue = {};
-			if (decodedToken?.user_id && this.parameters.prompt) {
-				this.parameters.user_id = decodedToken.user_id;
-				parameters.user_id = this.parameters.user_id;
-				parameters.prompt = this.parameters.prompt;
-				parameters.type = "system";
-				parameters.tts = JSON.parse(this.parameters.tts || "false");
-				if (this.parameters.option) {
-					parameters.option = this.parameters.option;
-				} else {
-					parameters.option = "text";
-				}
-				const response = await functions.apiRequest(
-					this,
-					"POST",
-					"http://" +
-						process.env.LLM_HOST +
-						":" +
-						process.env.LLM_PORT,
-					"/use-model",
-					parameters,
-					parseInt(process.env.LLM_TIMEOUT || "0"),
-				);
-				this.success = response?.status === "success" ? true : false;
-				if (response?.message) {
-					this.message.push(
-						...(Array.isArray(response.message)
-							? response.message
-							: [response.message]),
-					);
-				}
-				if (
-					response?.response ||
-					(response?.media?.mime_type && response?.media?.base64)
-				) {
-					this.success = true;
-					this.results = [response];
-					await this.insertPrompt(
-						this.parameters.prompt,
-						response?.response || "",
-						response?.media?.mime_type || "",
-						response?.media?.base64 || "",
-					);
-				}
-				if (response?.parameters) {
-					this.parameters = {
-						...this.parameters,
-						...response.parameters,
-					};
-				}
-				if (response?.queries && Array.isArray(response.queries)) {
-					this.queries.push(...response.queries);
-				}
-			} else {
-				this.success = false;
-				this.message.push(
-					"Invalid parameters: user_id and prompt are required.",
-				);
-			}
-		}
-	};
 	downloadModel = async () => {
 		// const model = await snapshotDownload(
 		// 	"meta-llama/Llama-3.1-8B-Instruct",
@@ -625,17 +501,13 @@ class LLMAction extends GenericAction {
 		this.success = true;
 		this.results = [models];
 	};
-
-	// Uses GenericAction CRUD so global-rule endpoints stay consistent with the existing API response shape.
 	addGlobalRule = async () => {
 		await this.add([models.GlobalRule]);
 	};
-
 	saveGlobalRule = async () => {
 		this.parameters.id = this.parameters.global_rule_id;
 		await this.save([models.GlobalRule]);
 	};
-
 	getGlobalRule = async () => {
 		if (!this.parameters.order) {
 			this.parameters.order = '[["created", "DESC"]]';
@@ -757,7 +629,7 @@ class LLMAction extends GenericAction {
 
 		if (this.parameters.current_page) {
 			this.paginationResult = await functions.pageFunction(
-				models.ModelType,
+				models.GlobalRule,
 				this.sequelizeOptions,
 				this.parameters,
 			);
@@ -790,181 +662,10 @@ class LLMAction extends GenericAction {
 
 		this.success = true;
 	};
-
 	deleteGlobalRule = async () => {
 		this.parameters.id = this.parameters.global_rule_id;
 		await this.delete([models.GlobalRule]);
 	};
-
-	addModelType = async () => {
-		await this.add([models.ModelType]);
-	};
-
-	saveModelType = async () => {
-		await this.save([models.ModelType]);
-	};
-
-	getModelType = async () => {
-		// await this.get([models.ModelType]);
-		if (!this.parameters.order) {
-			this.parameters.order = '[["model", "ASC"]]';
-		}
-		if (validation.isJSON(this.parameters.order)) {
-			this.parameters.order = JSON.parse(this.parameters.order);
-		}
-
-		this.sequelizeOptions = {
-			subQuery: false,
-			attributes: {
-				include: [
-					[
-						"id",
-						(await functions.renameDialerObject(
-							models.ModelType.name.trim(),
-							false,
-						)) + "_id",
-					],
-				],
-				exclude: ["id"],
-			},
-			order: this.parameters.order,
-			logging: (sql: string) => {
-				this.queries.push(sql.toString());
-			},
-		};
-
-		const whereTemp: types.KeyValue[] = [];
-		const deletedParam: types.KeyValue = { value: [0] };
-		if (Object.hasOwn(this.parameters, "show_deleted")) {
-			if (this.parameters.show_deleted === true) {
-				deletedParam.value = [0, 1];
-			}
-			if (Object.hasOwn(models.ModelType.getAttributes(), "deleted")) {
-				whereTemp.push({ deleted: { [Op.in]: deletedParam.value } });
-			}
-		}
-
-		if (Object.hasOwn(this.parameters, "id")) {
-			if (this.parameters.id) {
-				if (Object.hasOwn(models.ModelType.getAttributes(), "id")) {
-					whereTemp.push({ id: { [Op.eq]: this.parameters.id } });
-				}
-			}
-		}
-
-		if (
-			Object.hasOwn(this.parameters, "start") &&
-			Object.hasOwn(this.parameters, "end")
-		) {
-			if (this.parameters.start && this.parameters.end) {
-				if (
-					Object.hasOwn(models.ModelType.getAttributes(), "created")
-				) {
-					if (Object.hasOwn(this.parameters, "timezone")) {
-						if (this.parameters.timezone) {
-							this.parameters.start = moment(
-								this.parameters.start,
-							)
-								.tz(this.parameters.timezone)
-								.format();
-							this.parameters.end = moment(this.parameters.end)
-								.tz(this.parameters.timezone)
-								.format();
-						}
-					}
-					whereTemp.push(
-						Sequelize.where(
-							Sequelize.col(
-								models.ModelType.name.trim() + ".created",
-							),
-							{
-								[Op.gte]: moment(this.parameters.start).format(
-									"YYYY-MM-DD HH:mm:ss",
-								),
-								[Op.lte]: moment(this.parameters.end).format(
-									"YYYY-MM-DD HH:mm:ss",
-								),
-							},
-						),
-					);
-				}
-			}
-		}
-
-		if (Object.hasOwn(this.parameters, "keyword")) {
-			if (this.parameters.keyword) {
-				const keywordWhere: types.KeyValue[] = [];
-				if (Object.hasOwn(models.ModelType.getAttributes(), "name")) {
-					keywordWhere.push({
-						name: {
-							[Op.iLike]: "%" + this.parameters.keyword + "%",
-						},
-					});
-				}
-				if (Object.hasOwn(models.ModelType.getAttributes(), "note")) {
-					keywordWhere.push({
-						note: {
-							[Op.iLike]: "%" + this.parameters.keyword + "%",
-						},
-					});
-				}
-				if (keywordWhere.length > 0) {
-					whereTemp.push({ [Op.or]: keywordWhere });
-				}
-			}
-		}
-
-		if (whereTemp.length > 0) {
-			const sqlWhere: types.KeyValue = { [Op.and]: whereTemp };
-			Object.assign(this.sequelizeOptions, {
-				where: sqlWhere,
-			});
-		}
-
-		if (this.parameters.current_page) {
-			this.paginationResult = await functions.pageFunction(
-				models.ModelType,
-				this.sequelizeOptions,
-				this.parameters,
-			);
-			this.sequelizeOptions = this.paginationResult.sequelizeOptions;
-			this.page = this.paginationResult.page;
-		}
-
-		Object.assign(this.sequelizeOptions, {
-			logging: (sql: string) => {
-				this.queries.push(sql.toString());
-				// if ((globalThis.globalVars.GLOBAL_DEBUG == "true" && globalThis.globalVars.GLOBAL_DEBUG_LEVEL == "info") || globalThis.globalVars.DEBUG_USER == "foobar") {
-				// 	console.log("(Generic) " + models.ModelType.name.trim() + ".get sql: " + sql.toString());
-				// }
-			},
-		});
-
-		this.results = await models.ModelType.findAll(this.sequelizeOptions);
-		if (this.results.length > 0) {
-			const formatFields = [
-				(await functions.renameDialerObject(
-					models.ModelType.name.trim(),
-					false,
-				)) + "_id",
-			];
-			this.results = await functions.formatResults(
-				this.results,
-				formatFields,
-			);
-		}
-
-		this.success = true;
-	};
-	deleteModelType = async () => {
-		this.parameters.id =
-			this.parameters.model_type_id || this.parameters.id;
-		if (this.parameters.id) {
-			await this.delete([models.ModelType]);
-		}
-	};
-
-	// Persist user memory records using the existing GenericAction CRUD flow for consistent response formatting.
 	addUserP2 = async () => {
 		await this.add([models.UserP2]);
 	};
