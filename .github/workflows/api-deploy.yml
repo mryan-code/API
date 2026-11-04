@@ -392,6 +392,9 @@ jobs:
 
           echo "Syncing repository files to HOST."
           # Keep the HOST deploy directory in sync to avoid stale TypeScript files from prior apps/releases.
+          # Anchor models/ to the repo-root weights directory. An unanchored models/ also matches
+          # src/models and src/__tests__/models, so --delete never removes stale tests such as
+          # GlobalRule.test.ts after model type is removed, and the HOST tsc build fails.
           rsync \
             -az \
             --progress \
@@ -403,13 +406,13 @@ jobs:
             --exclude='temp' \
             --exclude='.env' \
             --exclude='.env.*' \
-            --exclude='models/' \
+            --exclude='/models/' \
             --exclude='certificates/' \
             --filter='P .env' \
             --filter='P .env.*' \
             --filter='P node_modules/' \
             --filter='P certificates/' \
-            --filter='P models/' \
+            --filter='P /models/' \
             --rsync-path="$remote_rsync_path" \
             -e "ssh $SSH_KEEPALIVE_OPTIONS -p $DEPLOY_PORT -o ControlMaster=auto -o ControlPath=$control_path -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o BatchMode=yes -o PasswordAuthentication=no" \
             ./ \
