@@ -179,7 +179,7 @@
 			}
 		},
 		"/health": {
-			"get": {
+			"post": {
 				"summary": "LLM health check",
 				"description": "Check LLM service availability.",
 				"tags": ["LLM"],
@@ -190,79 +190,10 @@
 					"500": {
 						"$ref": "#/components/responses/InternalServerError"
 					}
-				}
-			}
-		},
-		"/system-model": {
-			"post": {
-				"summary": "Use Pre-trained LLM",
-				"description": "Use pre-trained LLM for inference.",
-				"tags": ["LLM"],
-				"responses": {
-					"200": {
-						"$ref": "#/components/responses/Ok"
-					},
-					"500": {
-						"$ref": "#/components/responses/InternalServerError"
-					}
 				},
 				"parameters": [
 					{
-						"name": "prompt",
-						"required": true,
-						"description": "Prompt to use for inference.",
-						"in": "query",
-						"type": "string",
-						"value": "Hello, how are you?"
-					},
-					{
-						"name": "option",
-						"required": true,
-						"description": "Option to use for inference (text, image, music, code, video).",
-						"in": "query",
-						"type": "string",
-						"value": "text"
-					}
-				]
-			}
-		},
-		"/custom-model": {
-			"post": {
-				"summary": "Use Pre-trained LLM",
-				"description": "Use pre-trained LLM for inference.",
-				"tags": ["LLM"],
-				"responses": {
-					"200": {
-						"$ref": "#/components/responses/Ok"
-					},
-					"500": {
-						"$ref": "#/components/responses/InternalServerError"
-					}
-				},
-				"parameters": [
-					{
-						"name": "prompt",
-						"required": true,
-						"description": "Prompt to use for inference.",
-						"in": "query",
-						"type": "string",
-						"value": "Hello, how are you?"
-					},
-					{
-						"name": "model",
-						"required": true,
-						"description": "Model to use for inference.",
-						"in": "query",
-						"type": "string",
-						"value": "Gemma4-31B-QAT-Uncensored-HauhauCS-Balanced-Q4_K_M.gguf"
-					},
-					{
-						"name": "label",
-						"required": true,
-						"description": "Required custom model label (max 20 chars).",
-						"in": "query",
-						"type": "string",
-						"value": "default"
+						"$ref": "#/components/parameters/user_jwt"
 					}
 				]
 			}

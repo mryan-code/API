@@ -94,7 +94,7 @@ routes.get("/get-requestlog", async (req: Request, res: Response) => {
 });
 
 // LLM
-routes.get("/load", async (req: Request, res: Response) => {
+routes.post("/load", async (req: Request, res: Response) => {
 	const Action = new actions.LLMAction(req, res, true);
 	await Action.Action();
 });

@@ -18,7 +18,6 @@ import { fileURLToPath } from "url";
 import path from "path";
 import { KokoroTTS } from "kokoro-js";
 
-import { loadLlamaCpp } from "../loaders/llama";
 
 // node-llama-cpp is loaded lazily through ../loaders/llama, a plain-JS
 // shim: the package is ESM-only with top-level await in its module
@@ -309,7 +308,51 @@ class LLMAction extends GenericAction {
 		}
 	};
 
-	load = async () => {};
+	load = async () => {
+		if (await functions.verifyJWT(this.parameters.user_jwt)) {
+			const decodedToken: types.KeyValue | undefined =
+				await functions.decodeJWT(this.parameters.user_jwt);
+			if (decodedToken?.user_id) {
+				this.parameters.user_id = decodedToken.user_id;
+				const conversation: string = (
+					this.parameters.conversation ||
+					this.parameters.subject ||
+					"main"
+				)
+					.toString()
+					.slice(0, 100);
+				const sessionKey: string = functions.llmSessionKey(
+					Number(this.parameters.user_id),
+					conversation,
+				);
+				const alreadyLoaded: boolean =
+					functions.hasLlmSession(sessionKey);
+				// Creates the resident session (model + context + chat
+				// session, with any stored transcript replayed) or returns
+				// the one already warm. See functions/llmSessions.
+				const entry = await functions.getOrCreateLlmSession(
+					Number(this.parameters.user_id),
+					conversation,
+				);
+				this.results = [
+					{
+						user_id: this.parameters.user_id,
+						conversation: conversation,
+						session_key: entry.key,
+						subject_id: entry.subject_id,
+						loaded: true,
+						created: !alreadyLoaded,
+					},
+				];
+				this.success = true;
+			} else {
+				this.success = false;
+				this.message.push(
+					"Invalid parameters: user_id is required.",
+				);
+			}
+		}
+	};
 	chat = async () => {
 		console.log("chat", this.parameters);
 		if (await functions.verifyJWT(this.parameters.user_jwt)) {
@@ -405,26 +448,28 @@ class LLMAction extends GenericAction {
 				console.log("rules", rules);
 				returnObject.rules = rules;
 
-				// Initialize the llama engine
-				const { getLlama, LlamaChatSession } = await loadLlamaCpp();
-				const llama = await getLlama();
-
-				// Load your local GGUF model
-				const model = await llama.loadModel({
-					modelPath: path.join(
-						process.env.MODEL_PATH || "",
-						process.env.BASE_MODEL || "",
-					),
-				});
-
-				// Create a context and a chat session
-				const context = await model.createContext();
-				const session = new LlamaChatSession({
-					contextSequence: context.getSequence(),
-				});
-
-				// Prompt the model
-				const response = await session.prompt(this.parameters.prompt);
+				// Prompt the resident session for this user + conversation.
+				// The session is created by /load (or lazily here) and stays
+				// warm between requests, so the model keeps the conversation
+				// in its context instead of starting over on every call.
+				// See functions/llmSessions.
+				const conversation: string = (
+					this.parameters.conversation ||
+					this.parameters.subject ||
+					"main"
+				)
+					.toString()
+					.slice(0, 100);
+				const entry = await functions.getOrCreateLlmSession(
+					Number(this.parameters.user_id),
+					conversation,
+				);
+				const response = await functions.promptLlmSession(
+					entry,
+					this.parameters.prompt,
+				);
+				returnObject.conversation = conversation;
+				returnObject.session_key = entry.key;
 
 				returnObject.answer = response;
 				console.log("AI:", response);
