@@ -34,7 +34,7 @@ const startServer = async () => {
 			for await (const module of Object.keys(returnValue)) {
 				if (
 					globalThis.globalVars.GLOBAL_DEBUG_LEVEL === "info" ||
-					globalThis.globalVars.DEBUG_USER === "foobar"
+					globalThis.globalVars.DEBUG_USER === "mryan"
 				) {
 					console.log(
 						module +
