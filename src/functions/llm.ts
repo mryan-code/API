@@ -269,8 +269,16 @@ function startSweeper() {
 	}, SWEEP_INTERVAL_MS);
 	timer.unref();
 }
-async function chat(context: types.HttpContext): Promise<types.HttpContext> {
-	context = functions.initializeContext(context);
+
+// initializeContext and sendContext require a HelperContext. The request
+// payload (user_jwt, prompt, conversation, subject, order) is not declared
+// on that type, so the handler context also keeps a KeyValue index.
+type LlmHandlerContext = types.HelperContext & types.KeyValue;
+
+async function chat(context: LlmHandlerContext): Promise<types.HelperContext> {
+	// initializeContext returns the same object it was given, with missing
+	// helper fields filled in. The cast keeps the payload fields typed.
+	context = functions.initializeContext(context) as LlmHandlerContext;
 	if (await functions.verifyJWT(context.user_jwt)) {
 		const decodedToken: types.KeyValue | undefined =
 			await functions.decodeJWT(context.user_jwt);
@@ -400,7 +408,7 @@ async function chat(context: types.HttpContext): Promise<types.HttpContext> {
 }
 
 async function tts(
-	context: types.HttpContext,
+	context: LlmHandlerContext,
 	text: string,
 	voiceOption:
 		| "af_heart"
@@ -423,7 +431,8 @@ async function tts(
 		| "am_onyx"
 		| "am_puck"
 		| "am_santa" = "af_heart",
-): Promise<types.HttpContext> => {
+): Promise<types.HelperContext> {
+	context = functions.initializeContext(context) as LlmHandlerContext;
 	if (!process.env.TTS_MODEL) {
 		context.success = false;
 		context.message.push("TTS model not found");
