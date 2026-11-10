@@ -129,6 +129,19 @@ async function loadHistoryItems(
 	return history;
 }
 
+// The global rules are the session's system prompt, snapshotted when the
+// session is created: a rule edited mid-conversation applies from the next
+// session (or the next rebuild), not retroactively to a warm one.
+async function loadSystemPrompt(): Promise<string> {
+	const rules = await models.GlobalRule.findAll({
+		where: { deleted: 0 },
+		order: [["created", "ASC"]],
+	});
+	return rules
+		.map((row) => (row.rule || "").trim())
+		.filter((text) => text.length > 0)
+		.join("\n");
+}
 async function createLlmSession(
 	key: string,
 	user_id: number,
@@ -142,9 +155,15 @@ async function createLlmSession(
 	const session = new LlamaChatSession({
 		contextSequence: sequence,
 	});
+	const systemPrompt = await loadSystemPrompt();
 	const history = await loadHistoryItems(subject_id);
-	if (history.length > 0) {
-		session.setChatHistory(history);
+	const fullHistory: ChatHistoryItem[] = [];
+	if (systemPrompt) {
+		fullHistory.push({ type: "system", text: systemPrompt });
+	}
+	fullHistory.push(...history);
+	if (fullHistory.length > 0) {
+		session.setChatHistory(fullHistory);
 	}
 	const entry: LlmSessionEntry = {
 		key: key,
