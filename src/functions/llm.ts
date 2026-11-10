@@ -269,7 +269,7 @@ function startSweeper() {
 	}, SWEEP_INTERVAL_MS);
 	timer.unref();
 }
-async function chat(context: types.KeyValue) {
+async function chat(context: types.HttpContext): Promise<types.HttpContext> {
 	context = functions.initializeContext(context);
 	if (await functions.verifyJWT(context.user_jwt)) {
 		const decodedToken: types.KeyValue | undefined =
@@ -400,7 +400,7 @@ async function chat(context: types.KeyValue) {
 }
 
 async function tts(
-	context: types.KeyValue,
+	context: types.HttpContext,
 	text: string,
 	voiceOption:
 		| "af_heart"
@@ -423,7 +423,7 @@ async function tts(
 		| "am_onyx"
 		| "am_puck"
 		| "am_santa" = "af_heart",
-) {
+): Promise<types.HttpContext> => {
 	if (!process.env.TTS_MODEL) {
 		context.success = false;
 		context.message.push("TTS model not found");
